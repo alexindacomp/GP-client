@@ -1,0 +1,42 @@
+.disclosure {
+  margin-top: var(--space-1);
+}
+
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-height: 24px;
+  margin-left: calc(var(--space-1) * -1);
+  padding: 0 var(--space-1);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-accent-text);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  cursor: pointer;
+}
+
+.toggle:hover {
+  background: var(--color-subtle-hover);
+}
+
+.chevron,
+.chevronOpen {
+  transition: transform var(--duration-fast) var(--easing-standard);
+}
+
+.chevronOpen {
+  transform: rotate(90deg);
+}
+
+.detail {
+  margin-top: var(--space-1);
+  user-select: text;
+  color: var(--color-text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  overflow-wrap: anywhere;
+}

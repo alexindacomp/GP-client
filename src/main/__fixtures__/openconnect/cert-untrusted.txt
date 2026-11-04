@@ -1,0 +1,11 @@
+# openconnect 9.12: portal certificate signed by an unknown CA
+POST https://vpn.example.com/global-protect/prelogin.esp?tmp=tmp&clientVer=4100&clientos=Linux
+Connected to 203.0.113.10:443
+SSL negotiation with vpn.example.com
+! Server certificate verify failed: signer not found
+! 
+! Certificate from VPN server "vpn.example.com" failed verification.
+! Reason: signer not found
+! To trust this server in future, perhaps add this to your command line:
+!     --servercert pin-sha256:xp3scfzy3rOgQEXnfPiYKrUk7D66a8b8O+gEXaMPleE=
+? Enter 'yes' to accept, 'no' to abort; anything else to view:

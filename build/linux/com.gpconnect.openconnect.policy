@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE policyconfig PUBLIC
+ "-//freedesktop//DTD PolicyKit Policy Configuration 1.0//EN"
+ "http://www.freedesktop.org/standards/PolicyKit/1/policyconfig.dtd">
+<!--
+  GP Connect: run openconnect with root privileges via pkexec.
+  Install to /usr/share/polkit-1/actions/ (the .deb package does this).
+  auth_admin (not auth_admin_keep): a cached authorization would let any process of the
+  user start openconnect as root with arbitrary options for several minutes.
+  The exec.path annotation must match the absolute path of the openconnect binary.
+-->
+<policyconfig>
+  <vendor>GP Connect</vendor>
+  <vendor_url>https://github.com/</vendor_url>
+  <icon_name>network-vpn</icon_name>
+
+  <action id="com.gpconnect.openconnect.sbin">
+    <description>Start the GlobalProtect VPN tunnel (OpenConnect)</description>
+    <description xml:lang="ru">Запуск VPN-туннеля GlobalProtect (OpenConnect)</description>
+    <message>Authentication is required to create the VPN tunnel</message>
+    <message xml:lang="ru">Для создания VPN-туннеля требуется аутентификация</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/sbin/openconnect</annotate>
+  </action>
+
+  <action id="com.gpconnect.openconnect.bin">
+    <description>Start the GlobalProtect VPN tunnel (OpenConnect)</description>
+    <description xml:lang="ru">Запуск VPN-туннеля GlobalProtect (OpenConnect)</description>
+    <message>Authentication is required to create the VPN tunnel</message>
+    <message xml:lang="ru">Для создания VPN-туннеля требуется аутентификация</message>
+    <defaults>
+      <allow_any>auth_admin</allow_any>
+      <allow_inactive>auth_admin</allow_inactive>
+      <allow_active>auth_admin</allow_active>
+    </defaults>
+    <annotate key="org.freedesktop.policykit.exec.path">/usr/bin/openconnect</annotate>
+  </action>
+</policyconfig>

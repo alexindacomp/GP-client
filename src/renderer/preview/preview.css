@@ -1,0 +1,63 @@
+/* DEV-ONLY: simulates the desktop behind the translucent window and the native window chrome. */
+/* [data-platform] raises specificity above base.css `html { background: transparent }`. */
+html[data-platform] {
+  background: linear-gradient(135deg, #7aa7d6 0%, #c9a7d8 50%, #f0c27b 100%);
+}
+
+html[data-platform][data-theme='dark'] {
+  background: linear-gradient(135deg, #1d2b4a 0%, #3b2347 50%, #4a3520 100%);
+}
+
+html[data-platform='linux'][data-theme] {
+  background: #77216f;
+}
+
+html.preview-frame body {
+  position: relative;
+  width: 380px;
+  height: 600px;
+  margin: 40px auto;
+  border-radius: 8px;
+  box-shadow: 0 16px 48px rgb(0 0 0 / 0.35);
+  backdrop-filter: blur(40px) saturate(1.4);
+}
+
+html.preview-frame,
+html.preview-frame body {
+  height: auto;
+}
+
+html.preview-frame #root {
+  height: 600px;
+}
+
+/* Windows titleBarOverlay controls (top-right 138×36). */
+html.preview-frame[data-platform='win32'] body::after {
+  content: '─      ☐      ✕';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 138px;
+  height: 36px;
+  font-size: 11px;
+  line-height: 36px;
+  text-align: center;
+  color: var(--color-text);
+  pointer-events: none;
+}
+
+/* macOS traffic lights (top-left, hiddenInset). */
+html.preview-frame[data-platform='darwin'] body::after {
+  content: '';
+  position: absolute;
+  top: 13px;
+  left: 18px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f57;
+  box-shadow:
+    20px 0 0 #febc2e,
+    40px 0 0 #28c840;
+  pointer-events: none;
+}

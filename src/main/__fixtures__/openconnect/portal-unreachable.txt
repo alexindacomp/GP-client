@@ -1,0 +1,6 @@
+# openconnect 9.12: portal resolves but nothing answers on 443
+POST https://vpn.example.com/global-protect/prelogin.esp?tmp=tmp&clientVer=4100&clientos=Linux
+! Failed to connect to 203.0.113.10:443: Connection timed out
+! Failed to connect to host vpn.example.com
+! Failed to open HTTPS connection to vpn.example.com
+! Failed to complete authentication

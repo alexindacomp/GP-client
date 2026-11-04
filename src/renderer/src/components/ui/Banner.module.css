@@ -1,0 +1,75 @@
+.banner {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-stroke);
+  border-radius: var(--radius-card);
+}
+
+.icon {
+  flex: none;
+  margin-top: 2px;
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex: 1;
+  min-width: 0;
+}
+
+.title {
+  font-weight: var(--font-weight-semibold);
+}
+
+.text {
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.dismiss {
+  flex: none;
+  margin: -6px -6px 0 0;
+}
+
+.error {
+  background: var(--color-danger-bg);
+}
+
+.error .icon {
+  color: var(--color-danger);
+}
+
+.warning {
+  background: var(--color-warning-bg);
+}
+
+.warning .icon {
+  color: var(--color-warning);
+}
+
+.success {
+  background: var(--color-success-bg);
+}
+
+.success .icon {
+  color: var(--color-success);
+}
+
+.info {
+  background: var(--color-info-bg);
+}
+
+.info .icon {
+  color: var(--color-accent-text);
+}

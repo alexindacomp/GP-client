@@ -1,0 +1,187 @@
+/*
+ * Design tokens (Fluent-like). Applied via <html data-theme="light|dark" data-platform="win32|darwin|linux">.
+ * Contrast (WCAG AA, >= 4.5:1 for text) was checked for text/secondary/accent/status colours
+ * against --color-bg-solid and --color-layer in both themes.
+ */
+
+:root {
+  /* Typography */
+  --font-family: system-ui, -apple-system, 'Segoe UI', Ubuntu, Cantarell, 'Noto Sans', sans-serif;
+  --font-mono: ui-monospace, 'Cascadia Mono', Consolas, 'SF Mono', Menlo, 'Ubuntu Mono', monospace;
+  --font-size-caption: 12px;
+  --font-size-body: 14px;
+  --font-size-body-strong: 14px;
+  --font-size-subtitle: 20px;
+  --font-size-title: 24px;
+  --line-height-caption: 16px;
+  --line-height-body: 20px;
+  --line-height-subtitle: 28px;
+  --font-weight-regular: 400;
+  --font-weight-semibold: 600;
+
+  /* Spacing (4px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* Shape */
+  --radius-control: 4px;
+  --radius-card: 8px;
+  --radius-round: 999px;
+
+  /* Sizes */
+  --control-height: 32px;
+  --titlebar-height: 36px;
+  --titlebar-inset-start: 0px;
+  --titlebar-inset-end: 0px;
+  --toggle-size: 128px;
+  --toggle-size-compact: 96px;
+  --focus-width: 2px;
+
+  /* Motion */
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 1000ms;
+  --easing-standard: cubic-bezier(0.33, 0, 0.67, 1);
+  --easing-decelerate: cubic-bezier(0.1, 0.9, 0.2, 1);
+
+  /* Layers */
+  --z-dialog: 100;
+}
+
+[data-platform='win32'] {
+  --font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
+  --titlebar-inset-end: 138px; /* titleBarOverlay window controls */
+}
+
+[data-platform='darwin'] {
+  --font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --titlebar-height: 38px;
+  --titlebar-inset-start: 78px; /* hiddenInset traffic lights */
+}
+
+[data-platform='linux'] {
+  --font-family: Ubuntu, Cantarell, system-ui, 'Noto Sans', sans-serif;
+}
+
+/* ---------------------------------------------------------------- light */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+  --color-bg-solid: #f3f3f3;
+  --color-bg-translucent: rgb(243 243 243 / 0.55);
+  --color-layer: rgb(255 255 255 / 0.72);
+  --color-layer-solid: #fbfbfb;
+  --color-layer-alt: rgb(255 255 255 / 0.5);
+  --color-overlay: rgb(0 0 0 / 0.3);
+  --color-dialog: #ffffff;
+
+  --color-text: #1a1a1a;
+  --color-text-secondary: #5c5c5c; /* 6.0:1 on #f3f3f3 */
+  --color-text-disabled: #8a8a8a;
+  --color-text-on-accent: #ffffff;
+
+  --color-stroke: rgb(0 0 0 / 0.0803);
+  --color-stroke-strong: rgb(0 0 0 / 0.16);
+  --color-stroke-control: #8a8a8a; /* >= 3:1 for input borders */
+
+  --color-control: rgb(255 255 255 / 0.7);
+  --color-control-hover: rgb(249 249 249 / 0.5);
+  --color-control-pressed: rgb(249 249 249 / 0.3);
+  --color-control-disabled: rgb(249 249 249 / 0.3);
+  --color-subtle-hover: rgb(0 0 0 / 0.0373);
+  --color-subtle-pressed: rgb(0 0 0 / 0.0241);
+
+  --color-accent: #005fb8; /* 6.1:1 on white */
+  --color-accent-hover: #1a6fc0;
+  --color-accent-pressed: #0a5299; /* darker than rest: 7.5:1 with white text */
+  --color-accent-text: #005a9e; /* links/labels on layers */
+  --color-accent-subtle: rgb(0 95 184 / 0.1);
+
+  --color-success: #0f7b0f;
+  --color-success-bg: #dff6dd;
+  --color-warning: #8a5300;
+  --color-warning-bg: #fff4ce;
+  --color-danger: #c42b1c;
+  --color-danger-bg: #fde7e9;
+  --color-info: #5c5c5c;
+  --color-info-bg: rgb(246 246 246 / 0.9);
+
+  --color-focus-outer: #000000;
+  --color-focus-inner: #ffffff;
+
+  --shadow-card: 0 2px 4px rgb(0 0 0 / 0.04);
+  --shadow-dialog: 0 32px 64px rgb(0 0 0 / 0.19), 0 2px 21px rgb(0 0 0 / 0.15);
+  --shadow-toggle-connected: 0 0 0 8px rgb(0 95 184 / 0.12);
+}
+
+/* ---------------------------------------------------------------- dark */
+[data-theme='dark'] {
+  color-scheme: dark;
+  --color-bg-solid: #202020;
+  --color-bg-translucent: rgb(32 32 32 / 0.6);
+  --color-layer: rgb(58 58 58 / 0.3);
+  --color-layer-solid: #2b2b2b;
+  --color-layer-alt: rgb(255 255 255 / 0.0538);
+  --color-overlay: rgb(0 0 0 / 0.5);
+  --color-dialog: #2b2b2b;
+
+  --color-text: #ffffff;
+  --color-text-secondary: #cfcfcf; /* 11:1 on #202020 */
+  --color-text-disabled: #8f8f8f;
+  --color-text-on-accent: #000000;
+
+  --color-stroke: rgb(255 255 255 / 0.0837);
+  --color-stroke-strong: rgb(255 255 255 / 0.16);
+  --color-stroke-control: #9a9a9a;
+
+  --color-control: rgb(255 255 255 / 0.0605);
+  --color-control-hover: rgb(255 255 255 / 0.0837);
+  --color-control-pressed: rgb(255 255 255 / 0.0326);
+  --color-control-disabled: rgb(255 255 255 / 0.0419);
+  --color-subtle-hover: rgb(255 255 255 / 0.0605);
+  --color-subtle-pressed: rgb(255 255 255 / 0.0419);
+
+  --color-accent: #60cdff; /* text on accent is black: 11.6:1 */
+  --color-accent-hover: #5bbae6;
+  --color-accent-pressed: #56a8cf;
+  --color-accent-text: #99ebff;
+  --color-accent-subtle: rgb(96 205 255 / 0.14);
+
+  --color-success: #6ccb5f;
+  --color-success-bg: #393d1b;
+  --color-warning: #fce100;
+  --color-warning-bg: #433519;
+  --color-danger: #ff99a4;
+  --color-danger-bg: #442726;
+  --color-info: #cfcfcf;
+  --color-info-bg: rgb(255 255 255 / 0.0605);
+
+  --color-focus-outer: #ffffff;
+  --color-focus-inner: #000000;
+
+  --shadow-card: 0 2px 4px rgb(0 0 0 / 0.26);
+  --shadow-dialog: 0 32px 64px rgb(0 0 0 / 0.56), 0 2px 21px rgb(0 0 0 / 0.55);
+  --shadow-toggle-connected: 0 0 0 8px rgb(96 205 255 / 0.16);
+}
+
+/* Window background: Mica (Windows) / vibrancy (macOS) show through a translucent tint; Linux is opaque. */
+:root {
+  --color-app-bg: var(--color-bg-solid);
+}
+
+[data-platform='win32'],
+[data-platform='darwin'] {
+  --color-app-bg: var(--color-bg-translucent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --duration-fast: 0ms;
+    --duration-normal: 0ms;
+  }
+}

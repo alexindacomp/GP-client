@@ -1,0 +1,23 @@
+.log {
+  flex: 1 1 0;
+  min-height: 200px;
+  overflow: auto;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-stroke);
+  border-radius: var(--radius-card);
+  background: var(--color-layer);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  user-select: text;
+}
+
+.line {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.empty {
+  color: var(--color-text-secondary);
+  font-family: var(--font-family);
+}

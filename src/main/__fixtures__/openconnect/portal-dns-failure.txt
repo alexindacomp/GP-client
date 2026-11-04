@@ -1,0 +1,5 @@
+# openconnect 9.12: portal host name does not resolve
+POST https://vpn.example.com/global-protect/prelogin.esp?tmp=tmp&clientVer=4100&clientos=Linux
+! getaddrinfo failed for host 'vpn.example.com': Name or service not known
+! Failed to open HTTPS connection to vpn.example.com
+! Failed to complete authentication

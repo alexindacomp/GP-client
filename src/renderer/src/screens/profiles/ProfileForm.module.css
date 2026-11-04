@@ -1,0 +1,24 @@
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* Save/Cancel stay reachable while the (long) form scrolls inside the main area. */
+.actions {
+  position: sticky;
+  bottom: calc(var(--space-4) * -1);
+  z-index: 1;
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin: var(--space-2) calc(var(--space-4) * -1) calc(var(--space-4) * -1);
+  padding: var(--space-3) var(--space-4) var(--space-4);
+  border-top: 1px solid var(--color-stroke);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background: var(--color-bg-solid);
+}
+
+.actions > * {
+  flex: 1 1 0;
+}

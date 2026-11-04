@@ -1,0 +1,21 @@
+POST https://vpn.example.com/global-protect/prelogin.esp?tmp=tmp&clientVer=4100&clientos=Linux
+Connected to 203.0.113.10:443
+SSL negotiation with vpn.example.com
+Connected to HTTPS on vpn.example.com with ciphersuite (TLS1.3)-(ECDHE-SECP256R1)-(RSA-PSS-RSAE-SHA256)-(AES-256-GCM)
+POST https://vpn.example.com/global-protect/getconfig.esp
+Portal reports GlobalProtect version 6.1.1; we will report the same client version.
+2 gateway servers available:
+  Europe (gw-eu.example.com) [1]
+  US East (gw-us.example.com) [2]
+Please select GlobalProtect gateway.
+GATEWAY: [Europe|US East]:Europe
+POST https://gw-eu.example.com/ssl-vpn/login.esp
+GlobalProtect login returned authentication-source=okta
+POST https://gw-eu.example.com/ssl-vpn/getconfig.esp
+Tunnel timeout (rekey interval) is 180 minutes.
+Idle timeout is 180 minutes.
+No MTU received. Calculated 1422 for ESP tunnel
+POST https://gw-eu.example.com/ssl-vpn/hipreportcheck.esp
+Connected as 10.8.0.42, using SSL, with ESP in progress
+ESP session established with server
+ESP tunnel connected; exiting HTTPS mainloop.

@@ -1,0 +1,4 @@
+# openconnect 9.12: established tunnel dies (laptop resumed on another network)
+! GPST Dead Peer Detection detected dead peer!
+! SSL read error: Error in the pull function.; reconnecting.
+! Unrecoverable I/O error; exiting.

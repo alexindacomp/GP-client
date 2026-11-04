@@ -1,0 +1,108 @@
+appId: com.gpconnect.app
+productName: GP Connect
+copyright: Copyright © GP Connect contributors
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+  - '!**/*.map'
+extraResources:
+  - from: resources/tray
+    to: tray
+  - from: resources/icon.png
+    to: icon.png
+asar: true
+# Hardening: the packaged binary cannot be used as a generic Node runtime or
+# debugged/instrumented via env/CLI, and only the integrity-checked app.asar is loaded.
+electronFuses:
+  runAsNode: false
+  enableCookieEncryption: true
+  enableNodeOptionsEnvironmentVariable: false
+  enableNodeCliInspectArguments: false
+  enableEmbeddedAsarIntegrityValidation: true
+  onlyLoadAppFromAsar: true
+
+# Releases go to GitHub (owner/repo from package.json "repository"). The token comes
+# from GH_TOKEN / GITHUB_TOKEN in CI only; local dist:* scripts pass --publish never.
+publish:
+  provider: github
+  releaseType: release
+
+# Artifact names are stable (no version) so that
+# https://github.com/<owner>/gp-connect/releases/latest/download/<name> always works.
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+    # Runs from wherever it is started (user-writable): a bundled openconnect is
+    # rejected by the trust check there, so users install OpenConnect-GUI instead.
+    - target: portable
+      arch: [x64]
+  # The app itself runs unelevated; openconnect is elevated on demand via UAC.
+  requestedExecutionLevel: asInvoker
+  extraResources:
+    - from: resources/bin/win32
+      to: bin/win32
+      filter: ['**/*', '!.gitkeep']
+nsis:
+  oneClick: false
+  # Per-machine install into Program Files: the bundled openconnect (resources\bin\win32)
+  # must not be writable by the user, because it is started with administrator rights.
+  perMachine: true
+  # Must stay under Program Files: the openconnect trust check only accepts admin-only folders.
+  allowToChangeInstallationDirectory: false
+  createDesktopShortcut: true
+  shortcutName: GP Connect
+  artifactName: GP-Connect-Setup-${arch}.${ext}
+portable:
+  artifactName: GP-Connect-Portable-${arch}.${ext}
+
+mac:
+  target:
+    - target: dmg
+      arch: [arm64, x64]
+  category: public.app-category.utilities
+  # No Apple Developer ID: ad-hoc signature only (required to run on Apple Silicon).
+  # Hardened runtime + ad-hoc signing would reject Electron's pre-signed frameworks.
+  identity: '-'
+  hardenedRuntime: false
+  notarize: false
+  extraResources:
+    - from: resources/bin/darwin
+      to: bin/darwin
+      filter: ['**/*', '!.gitkeep']
+dmg:
+  artifactName: GP-Connect-mac-${arch}.${ext}
+
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+    - target: deb
+      arch: [x64]
+  category: Network
+  # WM_CLASS / app_id matches gp-connect.desktop, so the window is linked to its launcher.
+  syncDesktopName: true
+  maintainer: GP Connect contributors <gp-connect@users.noreply.github.com>
+  synopsis: GlobalProtect VPN client (OpenConnect)
+  description: Cross-platform GlobalProtect VPN client built on OpenConnect.
+  extraResources:
+    - from: resources/bin/linux
+      to: bin/linux
+      filter: ['**/*', '!.gitkeep']
+    - from: build/linux/com.gpconnect.openconnect.policy
+      to: polkit/com.gpconnect.openconnect.policy
+appImage:
+  # x64 only; AppImage convention names the arch x86_64.
+  artifactName: GP-Connect-linux-x86_64.${ext}
+deb:
+  depends:
+    - openconnect
+    - policykit-1 | pkexec
+  afterInstall: build/linux/after-install.sh
+  afterRemove: build/linux/after-remove.sh
+  # x64 only; Debian names the arch amd64.
+  artifactName: gp-connect_amd64.${ext}

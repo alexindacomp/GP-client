@@ -1,0 +1,98 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.label {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+.optional {
+  color: var(--color-text-secondary);
+}
+
+.control {
+  width: 100%;
+  min-height: var(--control-height);
+  padding: 5px var(--space-3) 6px;
+  border: 1px solid var(--color-stroke);
+  border-bottom-color: var(--color-stroke-control);
+  border-radius: var(--radius-control);
+  background-color: var(--color-control);
+  color: var(--color-text);
+  transition: background-color var(--duration-fast) var(--easing-standard);
+  -webkit-app-region: no-drag;
+}
+
+.control::placeholder {
+  color: var(--color-text-secondary);
+}
+
+.control:hover:not(:disabled) {
+  background-color: var(--color-control-hover);
+}
+
+/* Fluent "accent underline" for the focused field; keyboard focus also gets the ring. */
+.control:focus {
+  outline: none;
+  border-bottom: 2px solid var(--color-accent);
+  padding-bottom: 5px;
+  background-color: var(--color-layer-solid);
+}
+
+.control:focus-visible {
+  outline: var(--focus-width) solid var(--color-focus-outer);
+}
+
+.control:disabled {
+  color: var(--color-text-disabled);
+  background-color: var(--color-control-disabled);
+  border-bottom-color: var(--color-stroke);
+}
+
+.control[aria-invalid='true'] {
+  border-bottom-color: var(--color-danger);
+}
+
+.textarea {
+  min-height: calc(var(--control-height) * 3);
+  resize: vertical;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.select {
+  appearance: none;
+  padding-right: var(--space-8);
+  background-image:
+    linear-gradient(45deg, transparent 50%, currentColor 50%),
+    linear-gradient(135deg, currentColor 50%, transparent 50%);
+  background-position:
+    calc(100% - 17px) 50%,
+    calc(100% - 12px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  text-overflow: ellipsis;
+  cursor: pointer;
+}
+
+.select option {
+  background: var(--color-dialog);
+  color: var(--color-text);
+}
+
+.hint {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}
+
+.error {
+  color: var(--color-danger);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+}

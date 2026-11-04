@@ -1,0 +1,51 @@
+.pickers {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--space-3);
+}
+
+.hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+}
+
+.statusText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: calc(var(--line-height-subtitle) + var(--line-height-body));
+  max-width: 100%;
+  text-align: center;
+}
+
+.statusTitle {
+  font-size: var(--font-size-subtitle);
+  line-height: var(--line-height-subtitle);
+  font-weight: var(--font-weight-semibold);
+}
+
+.statusTitle.connected {
+  color: var(--color-accent-text);
+}
+
+.statusDetail {
+  max-width: 100%;
+  color: var(--color-text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.statusTitle.failed {
+  color: var(--color-danger);
+}
+
+.alerts {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  scroll-margin: var(--space-4);
+}

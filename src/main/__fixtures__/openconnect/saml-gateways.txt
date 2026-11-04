@@ -1,0 +1,16 @@
+# openconnect 9.12 --protocol=gp --usergroup=portal:prelogin-cookie --user=j.doe@example.com --passwd-on-stdin
+POST https://vpn.example.com/global-protect/getconfig.esp
+Portal reports GlobalProtect version 6.1.1; we will report the same client version.
+2 gateway servers available:
+  Europe (gw-eu.example.com) [1]
+  US East (gw-us.example.com) [2]
+! Please select GlobalProtect gateway.
+? GATEWAY: [Europe|US East]:
+POST https://gw-eu.example.com/ssl-vpn/login.esp
+GlobalProtect login returned authentication-source=okta
+POST https://gw-eu.example.com/ssl-vpn/getconfig.esp
+Tunnel timeout (rekey interval) is 180 minutes.
+Idle timeout is 180 minutes.
+No MTU received. Calculated 1422 for ESP tunnel
+Connected as 10.8.0.77, using SSL, with ESP in progress
+ESP session established with server

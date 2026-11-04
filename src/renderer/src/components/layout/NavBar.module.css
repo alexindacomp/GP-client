@@ -1,0 +1,59 @@
+.nav {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  flex: none;
+  padding: var(--space-1) var(--space-1) var(--space-2);
+  border-top: 1px solid var(--color-stroke);
+}
+
+.item {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: var(--space-2) 2px var(--space-1);
+  border: 0;
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: background-color var(--duration-fast) var(--easing-standard);
+}
+
+.item:hover {
+  background: var(--color-subtle-hover);
+  color: var(--color-text);
+}
+
+.item:active {
+  background: var(--color-subtle-pressed);
+}
+
+.item[aria-current='page'] {
+  color: var(--color-accent-text);
+}
+
+/* Fluent selection pill */
+.item[aria-current='page']::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 16px;
+  height: 3px;
+  margin-left: -8px;
+  border-radius: var(--radius-round);
+  background: var(--color-accent);
+}
+
+.label {
+  max-width: 100%;
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-caption);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

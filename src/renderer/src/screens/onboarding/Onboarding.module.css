@@ -1,0 +1,52 @@
+.lead {
+  color: var(--color-text-secondary);
+}
+
+.commands {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.command {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding-left: var(--space-3);
+  border: 1px solid var(--color-stroke);
+  border-radius: var(--radius-control);
+  background: var(--color-layer-alt);
+}
+
+.code {
+  flex: 1;
+  min-width: 0;
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-body);
+  overflow-wrap: anywhere;
+  user-select: text;
+}
+
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.alt {
+  margin-bottom: calc(var(--space-2) * -1);
+  color: var(--color-text-secondary);
+}
+
+/* Long link labels (uk/ru “…OpenConnect-GUI”) wrap instead of overflowing the 360px card. */
+button.wrapButton {
+  max-width: 100%;
+  padding-top: var(--space-1);
+  padding-bottom: var(--space-1);
+  white-space: normal;
+  text-align: center;
+}

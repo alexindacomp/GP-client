@@ -1,0 +1,9 @@
+out
+dist
+node_modules
+package-lock.json
+resources
+build
+graphify-out
+docs
+src/main/__fixtures__

@@ -1,0 +1,5 @@
+# openconnect 9.12: tunnel up, but the routing script fails
+GlobalProtect login returned authentication-source=local
+POST https://vpn.example.com/ssl-vpn/getconfig.esp
+Tunnel timeout (rekey interval) is 180 minutes.
+! Script '/usr/share/vpnc-scripts/vpnc-script' returned error 1

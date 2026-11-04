@@ -1,0 +1,9 @@
+# openconnect 9.12 started without root (e.g. elevation helper misconfigured)
+POST https://vpn.example.com/global-protect/getconfig.esp
+GlobalProtect login returned authentication-source=local
+POST https://vpn.example.com/ssl-vpn/getconfig.esp
+Tunnel timeout (rekey interval) is 180 minutes.
+! Failed to bind local tun device (TUNSETIFF): Operation not permitted
+! To configure local networking, openconnect must be running as root
+! See https://www.infradead.org/openconnect/nonroot.html for more information
+! Set up tun device failed

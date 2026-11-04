@@ -1,0 +1,22 @@
+.spinner {
+  display: inline-block;
+  flex: none;
+  border: 2px solid var(--color-accent-subtle);
+  border-top-color: var(--color-accent);
+  border-radius: var(--radius-round);
+  animation: spin var(--duration-slow) linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinner {
+    animation: none;
+    border-color: var(--color-accent);
+    border-right-color: var(--color-accent-subtle);
+  }
+}

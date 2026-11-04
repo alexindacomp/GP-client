@@ -1,0 +1,91 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--control-height);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-stroke);
+  border-radius: var(--radius-control);
+  background: var(--color-control);
+  color: var(--color-text);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--easing-standard),
+    border-color var(--duration-fast) var(--easing-standard);
+  -webkit-app-region: no-drag;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-control-hover);
+}
+
+.button:active:not(:disabled) {
+  background: var(--color-control-pressed);
+  color: var(--color-text-secondary);
+}
+
+.button:disabled {
+  color: var(--color-text-disabled);
+  background: var(--color-control-disabled);
+  cursor: default;
+}
+
+.secondary {
+  border-bottom-color: var(--color-stroke-strong);
+}
+
+.primary {
+  border-color: transparent;
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  font-weight: var(--font-weight-semibold);
+}
+
+.primary:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.primary:active:not(:disabled) {
+  background: var(--color-accent-pressed);
+  color: var(--color-text-on-accent);
+}
+
+.danger {
+  border-color: transparent;
+  background: var(--color-danger);
+  color: var(--color-bg-solid);
+  font-weight: var(--font-weight-semibold);
+}
+
+.danger:hover:not(:disabled),
+.danger:active:not(:disabled) {
+  background: var(--color-danger);
+  color: var(--color-bg-solid);
+  opacity: 0.9;
+}
+
+.subtle {
+  border-color: transparent;
+  background: transparent;
+}
+
+.subtle:hover:not(:disabled) {
+  background: var(--color-subtle-hover);
+}
+
+.subtle:active:not(:disabled) {
+  background: var(--color-subtle-pressed);
+}
+
+.subtle:disabled {
+  background: transparent;
+}
+
+.iconOnly {
+  width: var(--control-height);
+  padding: 0;
+}

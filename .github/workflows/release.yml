@@ -1,0 +1,79 @@
+name: Release
+
+# Push a tag that matches package.json "version", e.g. `git tag v0.1.0 && git push origin v0.1.0`.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  # Create the release once, so the parallel build jobs only upload assets to it
+  # (avoids racing electron-builder jobs creating duplicate releases).
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check that the tag matches package.json version
+        shell: bash
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version v${version}"
+            exit 1
+          fi
+
+      - name: Create GitHub release (if missing)
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1 \
+            || gh release create "${GITHUB_REF_NAME}" --title "GP Connect ${GITHUB_REF_NAME}" --generate-notes
+
+  build:
+    needs: create-release
+    name: ${{ matrix.name }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: windows (nsis + portable, x64)
+            os: windows-latest
+            targets: --win nsis portable --x64
+          - name: macos (dmg, arm64 + x64)
+            os: macos-latest
+            targets: --mac dmg --arm64 --x64
+          - name: linux (AppImage + deb, x64)
+            os: ubuntu-latest
+            targets: --linux AppImage deb --x64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
+
+      - name: Package and upload to the GitHub release
+        # Always publish to the repository this workflow runs in (package.json
+        # "repository" is metadata only and may still contain a placeholder).
+        shell: bash
+        run: >-
+          npx electron-builder ${{ matrix.targets }} --publish always
+          -c.publish.provider=github
+          -c.publish.owner=${{ github.repository_owner }}
+          -c.publish.repo=${{ github.event.repository.name }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Unsigned builds: no Apple Developer ID / Windows code-signing certificate.
+          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+          # Allow uploading to the release created above even when a job is re-run later.
+          EP_GH_IGNORE_TIME: 'true'

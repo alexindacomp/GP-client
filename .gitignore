@@ -1,0 +1,10 @@
+node_modules/
+out/
+dist/
+*.log
+.DS_Store
+coverage/
+graphify-out/
+resources/bin/*/*
+!resources/bin/*/.gitkeep
+*.tsbuildinfo

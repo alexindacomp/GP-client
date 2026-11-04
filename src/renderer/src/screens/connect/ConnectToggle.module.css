@@ -1,0 +1,134 @@
+.wrap {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: calc(var(--toggle-size) + var(--space-6));
+  height: calc(var(--toggle-size) + var(--space-6));
+  margin: 0 auto;
+}
+
+/* While an error banner is shown the hero shrinks so the banner's actions fit at 360×520. */
+.compact {
+  --toggle-size: var(--toggle-size-compact);
+}
+
+.compact .toggle {
+  gap: 0;
+}
+
+/* The full action stays in the button's aria-label; the 96px circle is too small for the ru word. */
+.compact .text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Progress ring around the button while an attempt runs. Purely decorative: it overlaps the
+   button (absolutely positioned, painted above in-flow content), so it must never take clicks. */
+.ring {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 3px solid transparent;
+  border-radius: var(--radius-round);
+  opacity: 0;
+  transition: opacity var(--duration-normal) var(--easing-standard);
+}
+
+.busy .ring,
+.stopping .ring {
+  opacity: 1;
+  border-color: var(--color-accent-subtle);
+  border-top-color: var(--color-accent);
+  animation: spin var(--duration-slow) linear infinite;
+}
+
+.on .ring {
+  opacity: 1;
+  border-color: var(--color-accent-subtle);
+}
+
+.toggle {
+  position: relative; /* stacks above the decorative ring */
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: var(--toggle-size);
+  height: var(--toggle-size);
+  padding: var(--space-3);
+  border: 1px solid var(--color-stroke-strong);
+  border-radius: var(--radius-round);
+  background: var(--color-control);
+  color: var(--color-text);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-normal) var(--easing-standard),
+    color var(--duration-normal) var(--easing-standard),
+    box-shadow var(--duration-normal) var(--easing-standard),
+    transform var(--duration-fast) var(--easing-standard);
+}
+
+.toggle:focus-visible {
+  outline-offset: 4px;
+}
+
+.toggle:hover:not(:disabled) {
+  background: var(--color-control-hover);
+}
+
+.toggle:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.toggle:disabled {
+  color: var(--color-text-disabled);
+  cursor: default;
+}
+
+.busy .toggle {
+  color: var(--color-accent-text);
+}
+
+.on .toggle {
+  border-color: transparent;
+  background: var(--color-accent);
+  color: var(--color-text-on-accent);
+  box-shadow: var(--shadow-toggle-connected);
+}
+
+.on .toggle:hover:not(:disabled) {
+  background: var(--color-accent-hover);
+}
+
+.text {
+  max-width: 100%;
+  font-weight: var(--font-weight-semibold);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .busy .ring,
+  .stopping .ring {
+    animation: none;
+    border-color: var(--color-accent);
+  }
+
+  .toggle:active:not(:disabled) {
+    transform: none;
+  }
+}

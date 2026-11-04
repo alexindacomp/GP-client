@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<prelogin-response>
+<status>Success</status>
+<authentication-message>Sign in with SSO</authentication-message>
+<saml-auth-method>POST</saml-auth-method>
+<saml-request>
+PGh0bWw+PGJvZHkgb25sb2FkPSJkb2N1bWVudC5mb3Jtc1swXS5zdWJtaXQoKSI+PGZvcm0gbWV0aG9kPSJQT1NUIiBhY3Rpb249Imh0dHBzOi8vaWRwLmV4YW1wbGUuY29tL3NzbyI+PGlucHV0IHR5cGU9ImhpZGRlbiIgbmFtZT0iU0FNTFJlcXVlc3QiIHZhbHVlPSJQSE5oYld4d09rRjFkR2h1VW1WeGRXVnpkQT09Ii8+PC9mb3JtPjwvYm9keT48L2h0bWw+
+</saml-request>
+</prelogin-response>

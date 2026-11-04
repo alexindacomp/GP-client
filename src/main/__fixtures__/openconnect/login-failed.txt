@@ -1,0 +1,10 @@
+# openconnect 9.12: wrong password; openconnect asks again on stdin
+POST https://vpn.example.com/global-protect/prelogin.esp?tmp=tmp&clientVer=4100&clientos=Linux
+Connected to 203.0.113.10:443
+SSL negotiation with vpn.example.com
+! Enter login credentials
+POST https://vpn.example.com/global-protect/getconfig.esp
+! Invalid username or password
+! Login failed.
+! Enter login credentials
+? Password:

@@ -1,0 +1,27 @@
+.code {
+  font-family: var(--font-mono);
+  font-size: var(--font-size-caption);
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.pin {
+  overflow-wrap: anywhere;
+}
+
+.command {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  vertical-align: middle;
+}
+
+/* Element + class beats Button's own size rules. */
+button.copy {
+  width: 24px;
+  min-height: 24px;
+  height: 24px;
+}
