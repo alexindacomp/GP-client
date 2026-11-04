@@ -2,7 +2,7 @@
   "name": "gp-connect",
   "productName": "GP Connect",
   "desktopName": "gp-connect.desktop",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Cross-platform GlobalProtect VPN client (Windows, macOS, Linux) built on OpenConnect",
   "author": {
     "name": "GP Connect contributors",
