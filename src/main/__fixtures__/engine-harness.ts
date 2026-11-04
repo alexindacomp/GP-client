@@ -10,7 +10,7 @@ import type { SamlSuccess } from '../auth/saml-extract';
 import { Logger } from '../logging/logger';
 import { BaseVpnProcess, type ProcessSpawner, type SpawnRequest } from '../process/types';
 import { VpnEngine, type EngineDeps } from '../vpn/engine';
-import { fixture } from './index';
+import { fixture, toCrlf } from './index';
 
 export class FakeProcess extends BaseVpnProcess {
   readonly pid = 4242;
@@ -165,10 +165,14 @@ export type TranscriptStep =
  * - `? Label:` → … and interactive prompts, on stderr without a trailing newline
  * - anything else → stdout line (progress: PRG_INFO / PRG_DEBUG)
  */
-export function loadTranscript(name: string): TranscriptStep[] {
+export function loadTranscript(name: string, opts: { eol?: 'lf' | 'crlf' } = {}): TranscriptStep[] {
+  // With eol 'crlf' every emitted line ends in CRLF and every prompt in a lone CR,
+  // like output from openconnect.exe / the Windows UAC bridge.
+  const text = fixture(`openconnect/${name}`);
+  const source = opts.eol === 'crlf' ? toCrlf(text) : text;
   const steps: TranscriptStep[] = [];
-  for (const raw of fixture(`openconnect/${name}`).split('\n')) {
-    if (raw.startsWith('#') || raw === '') continue;
+  for (const raw of source.split('\n')) {
+    if (raw.startsWith('#') || raw === '' || raw === '\r') continue;
     if (raw.startsWith('? ')) steps.push({ kind: 'prompt', stream: 'stderr', text: raw.slice(2) });
     else if (raw.startsWith('! ')) steps.push({ kind: 'out', stream: 'stderr', text: `${raw.slice(2)}\n` });
     else steps.push({ kind: 'out', stream: 'stdout', text: `${raw}\n` });

@@ -130,13 +130,22 @@ export function parsePrompt(fragment: string): OcPrompt | null {
   return SECRET_LABEL_RE.test(label) ? { kind: 'secret', label } : { kind: 'text', label };
 }
 
-/** Splits a byte stream into lines while remembering the trailing fragment. */
+/**
+ * Splits a byte stream into lines while remembering the trailing fragment.
+ *
+ * Accepts LF, CRLF and lone CR (openconnect.exe on Windows and the UAC bridge
+ * may emit CRLF). A CR at the very end of the received data is kept pending:
+ * it may be the first half of a CRLF split across two reads, or the end of a
+ * prompt such as "Password:\r" — either way the fragment must stay a partial
+ * line so prompt detection still sees it.
+ */
 export class LineSplitter {
   private pending = '';
 
   push(chunk: string): string[] {
     const data = this.pending + chunk;
-    const parts = data.split(/\r\n|\n|\r/);
+    // A lone CR splits lines only when something follows it in this data.
+    const parts = data.split(/\r\n|\n|\r(?!$)/);
     this.pending = parts.pop() ?? '';
     return parts;
   }
@@ -153,9 +162,9 @@ export class LineSplitter {
     return p;
   }
 
-  /** Remaining text at end of stream. */
+  /** Remaining text at end of stream (a dangling CR is dropped). */
   flush(): string[] {
-    const p = this.takePartial();
+    const p = this.takePartial().replace(/\r$/, '');
     return p === '' ? [] : [p];
   }
 }

@@ -143,3 +143,57 @@ describe('LineSplitter', () => {
     expect(s.flush()).toEqual(['tail']);
   });
 });
+
+describe('CRLF / lone CR tolerance', () => {
+  it('splits CRLF even when CR and LF arrive in different chunks', () => {
+    const s = new LineSplitter();
+    expect(s.push('Connected as 1.2.3.4\r')).toEqual([]);
+    expect(s.partial).toBe('Connected as 1.2.3.4\r');
+    expect(s.push('\nESP session established with server\r\n')).toEqual([
+      'Connected as 1.2.3.4',
+      'ESP session established with server',
+    ]);
+    expect(s.partial).toBe('');
+  });
+
+  it('treats a lone CR followed by more text as a line break', () => {
+    const s = new LineSplitter();
+    expect(s.push('progress 10%\rprogress 20%\n')).toEqual(['progress 10%', 'progress 20%']);
+  });
+
+  it('keeps a prompt terminated by a lone CR as the partial line', () => {
+    const s = new LineSplitter();
+    expect(s.push('Enter code\r\nPassword:\r')).toEqual(['Enter code']);
+    expect(parsePrompt(s.partial)).toEqual({ kind: 'secret', label: 'Password' });
+    expect(s.takePartial()).toBe('Password:\r');
+  });
+
+  it('drops a dangling CR at end of stream', () => {
+    const s = new LineSplitter();
+    s.push('Session terminated by server; exiting.\r');
+    expect(s.flush()).toEqual(['Session terminated by server; exiting.']);
+  });
+
+  it('handles CR CR LF without producing garbage lines', () => {
+    const s = new LineSplitter();
+    expect(s.push('a\r\r\nb\r\n').filter((l) => l !== '')).toEqual(['a', 'b']);
+  });
+
+  it.each([
+    ['GATEWAY: [Europe|US East]:\r', { kind: 'select', label: 'GATEWAY', options: ['Europe', 'US East'] }],
+    ['Username:\r', { kind: 'text', label: 'Username' }],
+    ["Enter 'yes' to accept, 'no' to abort; anything else to view: \r", { kind: 'cert-confirm' }],
+  ])('parsePrompt(%j)', (fragment, expected) => {
+    expect(parsePrompt(fragment)).toEqual(expected);
+  });
+
+  it('classifies CRLF-terminated lines like LF ones', () => {
+    const p = new OutputParser();
+    expect(p.parse('2 gateway servers available:\r')).toEqual({ type: 'gateway-list', count: 2 });
+    expect(p.parse('  Europe (gw-eu.example.com) [1]\r')).toEqual({
+      type: 'gateway',
+      gateway: { name: 'Europe', address: 'gw-eu.example.com', priority: 1 },
+    });
+    expect(parseLine('Connected as 10.0.0.5, using SSL\r')).toEqual({ type: 'connected', ip: '10.0.0.5' });
+  });
+});

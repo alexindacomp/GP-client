@@ -1,0 +1,25 @@
+# LF everywhere, regardless of core.autocrlf (Windows checkouts used to get CRLF
+# fixtures, which broke the openconnect transcript tests on the Windows CI runner).
+* text=auto eol=lf
+
+# Shell scripts must stay LF to run (deb maintainer scripts, polkit helpers).
+*.sh text eol=lf
+
+# Binary assets
+*.png binary
+*.ico binary
+*.icns binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.ttf binary
+*.exe binary
+*.dll binary
+*.dmg binary
+*.AppImage binary
+*.deb binary
+*.7z binary
+*.zip binary
