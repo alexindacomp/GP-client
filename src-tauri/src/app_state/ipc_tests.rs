@@ -58,6 +58,21 @@ const WAIT: Duration = Duration::from_secs(20);
 
 const PASSWORD: &str = "Hunter2-Pa$$word!";
 const OTP: &str = "918273";
+/// A plausible openconnect location of the OS running the tests (the engine only passes it on to
+/// the fake spawner; the settings validators accept it on every OS).
+#[cfg(windows)]
+const OC_PATH: &str = r"C:\Program Files\OpenConnect\openconnect.exe";
+#[cfg(not(windows))]
+const OC_PATH: &str = "/usr/sbin/openconnect";
+/// `SystemInfo.platform` of the OS running the tests.
+const PLATFORM: &str = if cfg!(windows) {
+    "win32"
+} else if cfg!(target_os = "macos") {
+    "darwin"
+} else {
+    "linux"
+};
+
 /// `<prelogin-cookie>` of fixtures/saml-success.html.
 const COOKIE: &str = "PRELOGIN-COOKIE-abc123XYZ";
 
@@ -80,7 +95,7 @@ const COMMANDS: [&str; 14] = [
     "system_open_external",
 ];
 
-/// One WebView2 app at a time.
+/// One app under test at a time (shared tracing/async runtime, global keyed state).
 fn serial() -> MutexGuard<'static, ()> {
     static LOCK: Mutex<()> = Mutex::new(());
     LOCK.lock().unwrap_or_else(PoisonError::into_inner)
@@ -260,7 +275,7 @@ struct FakeOpenconnect;
 #[async_trait]
 impl OpenconnectProvider for FakeOpenconnect {
     async fn locate_openconnect(&self) -> Option<String> {
-        Some(r"C:\Program Files\OpenConnect\openconnect.exe".into())
+        Some(OC_PATH.into())
     }
     async fn verify_elevated_files(&self, files: &ElevatedFiles) -> Result<ElevatedFiles, VpnError> {
         Ok(files.clone())
@@ -692,6 +707,11 @@ fn profiles_save_hides_storage_failures_behind_an_internal_error() {
 }
 
 #[test]
+#[cfg_attr(
+    target_os = "macos",
+    ignore = "QA-T5: on macOS 14+ profiles_remove calls AppHandle::fetch_data_store_identifiers, \
+              which is todo!() in tauri::test::MockRuntime (the command task panics, no response)"
+)]
 fn profiles_remove_clears_last_profile_and_sso_data_of_that_profile_only() {
     let mut c = ctx();
     let a = id_of(&c.save_profile(&profile_input("A"), None));
@@ -774,7 +794,8 @@ fn settings_get_and_set_round_trip_and_validate() {
             json!({ "patch": { "lastProfileId": "x" } }),
             field("lastProfileId", "invalid"),
         ),
-        // Elevation-relevant fields are validated before any confirmation dialog.
+        // Elevation-relevant fields are validated before any confirmation dialog. The path rules
+        // are string rules, identical on every OS (Windows-style inputs included).
         (
             json!({ "patch": { "openconnectPath": r"C:\Windows\System32\cmd.exe" } }),
             field("openconnectPath", "not_openconnect"),
@@ -907,7 +928,7 @@ fn logs_get_returns_the_log_buffer() {
 fn system_info_describes_the_platform_and_openconnect() {
     let mut c = ctx();
     let info = c.ok("system_info", json!({}));
-    assert_eq!(info["platform"], "win32");
+    assert_eq!(info["platform"], PLATFORM);
     assert_eq!(info["appVersion"], "0.1.0"); // mock_context's package version
     assert!(info["shouldUseDarkColors"].is_boolean(), "{info}");
     assert_eq!(
@@ -945,7 +966,7 @@ fn system_open_external_accepts_https_links_only() {
 #[test]
 fn settings_set_applies_elevation_settings_only_when_confirmed() {
     let mut c = ctx();
-    let path = r"C:\Program Files\OpenConnect\openconnect.exe";
+    let path = OC_PATH;
     let patch = json!({ "patch": { "openconnectPath": path } });
 
     c.dialog.accept.store(false, Ordering::SeqCst);
