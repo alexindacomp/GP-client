@@ -8,7 +8,8 @@
 
 mod channels;
 pub mod darwin_script;
-#[cfg_attr(not(windows), allow(dead_code))] // used by the Windows spawner; tested everywhere
+// Used by the Windows spawner only; its tests run on every OS.
+#[cfg(any(windows, test))]
 mod helper_client;
 pub mod helper_protocol;
 pub mod quote;
@@ -59,7 +60,7 @@ fn supported(platform: Platform, elevation: Elevation) -> bool {
 struct PlatformSpawner {
     platform: Platform,
     logger: Arc<Logger>,
-    #[cfg_attr(not(windows), allow(dead_code))]
+    #[cfg(windows)]
     helper_path: Option<PathBuf>,
 }
 
@@ -130,9 +131,12 @@ pub fn platform_spawner(
     logger: Arc<Logger>,
     helper_path: Option<PathBuf>,
 ) -> Arc<dyn ProcessSpawner> {
+    #[cfg(not(windows))]
+    drop(helper_path); // only the Windows helper client needs it
     Arc::new(PlatformSpawner {
         platform,
         logger,
+        #[cfg(windows)]
         helper_path,
     })
 }

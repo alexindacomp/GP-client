@@ -32,7 +32,7 @@ use gp_core::logging::Logger;
 use gp_core::prelogin::PreloginResult;
 use gp_core::saml::{
     SamlAuthenticator, SamlLoadTarget, SamlOutcome, SamlSuccess, build_saml_load_target,
-    extract_saml_from_headers, extract_saml_from_html, is_trusted_saml_source,
+    extract_saml_from_html, is_trusted_saml_source,
 };
 use gp_core::types::{Profile, VpnErrorCode};
 use gp_core::vpn::VpnError;
@@ -96,6 +96,8 @@ pub(crate) fn title_with_host(base: &str, url: &Url) -> String {
     }
 }
 
+// Used by the WebView2 header watcher (Windows); tested on every OS.
+#[cfg(any(windows, test))]
 /// Only the top-level document carries the result: navigations of the main frame are sent with
 /// `Sec-Fetch-Dest: document` (frames: `iframe`/`frame`, sub-resources: others). The header is
 /// set by the browser's network stack and cannot be forged by page scripts.
@@ -108,8 +110,8 @@ where
         .any(|(k, v)| k.eq_ignore_ascii_case("sec-fetch-dest") && v.trim().eq_ignore_ascii_case("document"))
 }
 
-/// Header-based extraction for a finished response (Windows/WebView2).
-#[cfg_attr(not(windows), allow(dead_code))]
+/// Header-based extraction for a finished response (Windows/WebView2; tested on every OS).
+#[cfg(any(windows, test))]
 pub(crate) fn saml_from_response(
     uri: &str,
     request_headers: &[(String, String)],
@@ -122,12 +124,12 @@ pub(crate) fn saml_from_response(
     if !is_trusted_saml_source(uri, true, allowed_hosts) {
         return None;
     }
-    extract_saml_from_headers(response_headers.iter().map(|(k, v)| (k.as_str(), v.as_str())))
+    gp_core::saml::extract_saml_from_headers(response_headers.iter().map(|(k, v)| (k.as_str(), v.as_str())))
 }
 
-#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 /// Whether WKWebView supports per-identifier data stores (`WKWebsiteDataStore(forIdentifier:)`,
 /// macOS 14+) for a `ProductVersion` like "14.2.1". Unknown versions count as unsupported.
+#[cfg(any(target_os = "macos", test))]
 pub(crate) fn supports_custom_data_store(product_version: &str) -> bool {
     product_version
         .trim()
@@ -137,8 +139,8 @@ pub(crate) fn supports_custom_data_store(product_version: &str) -> bool {
         .is_some_and(|major| major >= 14)
 }
 
-#[cfg_attr(not(target_os = "macos"), allow(dead_code))]
 /// `ProductVersion` from /System/Library/CoreServices/SystemVersion.plist.
+#[cfg(any(target_os = "macos", test))]
 pub(crate) fn plist_product_version(plist: &str) -> Option<String> {
     let after = &plist[plist.find("<key>ProductVersion</key>")? + "<key>ProductVersion</key>".len()..];
     let start = after.find("<string>")? + "<string>".len();
@@ -266,6 +268,7 @@ enum SamlEvent {
         generation: u64,
     },
     /// Result found in the response headers of a trusted top-level document.
+    #[cfg(windows)]
     Headers(SamlOutcome),
     Closed,
 }
@@ -450,6 +453,7 @@ impl SamlAuthenticator for SamlWindowAuthenticator {
                         break self.finish(outcome);
                     }
                 }
+                #[cfg(windows)]
                 Some(SamlEvent::Headers(outcome)) => break self.finish(outcome),
             }
         };
