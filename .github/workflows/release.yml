@@ -8,8 +8,12 @@ on:
 permissions:
   contents: write
 
+# Flow: create-release makes a DRAFT (invisible to `releases/latest`), every build job uploads its
+# assets to that draft, and `publish` makes it the latest release only when all builds succeeded
+# and exactly the expected assets are attached. A failed build therefore never leaves a public
+# release with missing downloads.
 jobs:
-  # Create the release once, so the parallel build jobs only upload assets to it.
+  # Create the (draft) release once, so the parallel build jobs only upload assets to it.
   create-release:
     runs-on: ubuntu-latest
     steps:
@@ -31,13 +35,18 @@ jobs:
             exit 1
           fi
 
-      - name: Create GitHub release (if missing)
+      # Idempotent: a re-run reuses the draft (or release) that already exists for the tag.
+      - name: Create the draft release (if missing)
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1 \
-            || gh release create "${GITHUB_REF_NAME}" --title "GP Connect ${GITHUB_REF_NAME}" --generate-notes
+          if gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" >/dev/null 2>&1; then
+            echo "Release ${GITHUB_REF_NAME} exists; reusing it"
+          else
+            gh release create "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --draft --verify-tag \
+              --title "GP Connect ${GITHUB_REF_NAME}" --generate-notes
+          fi
 
   build:
     needs: create-release
@@ -166,9 +175,35 @@ jobs:
           esac
           ls -la upload
 
-      # Always publish to the repository this workflow runs in.
-      - name: Upload to the GitHub release
+      # To the draft created above, in the repository this workflow runs in.
+      - name: Upload to the draft release
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh release upload "${GITHUB_REF_NAME}" upload/* --clobber --repo "${GITHUB_REPOSITORY}"
+
+  # Runs only when every build job succeeded (the default for `needs`).
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the assets and publish the release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          expected="$(printf '%s\n' \
+            GP-Connect-Setup-x64.exe \
+            GP-Connect-mac-arm64.dmg \
+            GP-Connect-mac-x64.dmg \
+            GP-Connect-linux-x86_64.AppImage \
+            gp-connect_amd64.deb | sort)"
+          actual="$(gh release view "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" \
+            --json assets --jq '.assets[].name' | sort)"
+          if [ "${actual}" != "${expected}" ]; then
+            echo "::error::Release assets differ from the expected set" >&2
+            diff <(echo "${expected}") <(echo "${actual}") >&2 || true
+            exit 1
+          fi
+          gh release edit "${GITHUB_REF_NAME}" --repo "${GITHUB_REPOSITORY}" --draft=false --latest
