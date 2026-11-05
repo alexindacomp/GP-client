@@ -5,18 +5,17 @@ import { App } from '../../App';
 import { installGpMock } from '../../test/gpMock';
 
 describe('onboarding', () => {
-  it('Windows: links to the OpenConnect-GUI releases (opened externally), winget only as a search hint', async () => {
+  it('Windows: says the installer bundles OpenConnect and suggests reinstalling; manual path stays', async () => {
     const mock = installGpMock({ info: { platform: 'win32', openconnectFound: false } });
     render(<App />);
     expect(await screen.findByRole('heading', { name: 'Установите OpenConnect' })).toBeInTheDocument();
-    expect(screen.getByText(/Установите OpenConnect-GUI/)).toBeInTheDocument();
-    expect(screen.getByText('winget search openconnect')).toBeInTheDocument();
-    expect(screen.queryByText(/winget install/)).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Скопировать команду winget search openconnect' })).toBeInTheDocument();
-    await userEvent.click(screen.getByRole('button', { name: 'Открыть страницу загрузки OpenConnect-GUI' }));
-    expect(mock.gp.system.openExternal).toHaveBeenCalledWith(
-      'https://gitlab.com/openconnect/openconnect-gui/-/releases',
-    );
+    expect(screen.getByText(/уже включает OpenConnect/)).toBeInTheDocument();
+    expect(screen.getByText(/Переустановите GP Connect/)).toBeInTheDocument();
+    expect(screen.queryByText(/winget|OpenConnect-GUI/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /страницу загрузки/ })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole('button', { name: 'Указать путь вручную' }));
+    expect(await screen.findByLabelText('Путь к openconnect')).toHaveFocus();
+    expect(mock.gp.system.openExternal).not.toHaveBeenCalled();
   });
 
   it('macOS: recommends MacPorts, not Homebrew', async () => {

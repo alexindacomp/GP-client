@@ -37,7 +37,6 @@
   --control-height: 32px;
   --titlebar-height: 36px;
   --titlebar-inset-start: 0px;
-  --titlebar-inset-end: 0px;
   --toggle-size: 128px;
   --toggle-size-compact: 96px;
   --focus-width: 2px;
@@ -55,13 +54,16 @@
 
 [data-platform='win32'] {
   --font-family: 'Segoe UI Variable Text', 'Segoe UI Variable', 'Segoe UI', system-ui, sans-serif;
-  --titlebar-inset-end: 138px; /* titleBarOverlay window controls */
 }
 
 [data-platform='darwin'] {
   --font-family: -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --titlebar-height: 38px;
-  --titlebar-inset-start: 78px; /* hiddenInset traffic lights */
+}
+
+/* Custom title area, set on <html data-titlebar> (see components/layout/TitleBar.tsx). */
+[data-titlebar='overlay-mac'] {
+  --titlebar-height: 28px; /* titleBarStyle "Overlay": standard-height title bar */
+  --titlebar-inset-start: 78px; /* traffic lights */
 }
 
 [data-platform='linux'] {

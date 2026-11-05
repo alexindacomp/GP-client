@@ -63,7 +63,7 @@ type Field = 'openconnectPath' | 'hipScriptPath' | 'extraArgs';
 
 /**
  * openconnect path, HIP script and extra arguments: edited together, saved explicitly.
- * Main asks for a native confirmation when any of them changes, so `settings.set` may stay
+ * The backend asks for a native confirmation when any of them changes, so `settings.set` may stay
  * pending for a while and rejects with code `not_confirmed` on cancel.
  */
 export function OpenconnectSettings({ focusPath }: { focusPath: boolean }): React.JSX.Element {
@@ -114,7 +114,7 @@ export function OpenconnectSettings({ focusPath }: { focusPath: boolean }): Reac
   const onSubmit = (e: FormEvent): void => {
     e.preventDefault();
     if (ocPathError || hipError || !parsed.ok) return;
-    // Send only real changes: each one triggers a confirmation dialog in main. '' clears a path.
+    // Send only real changes: each one triggers a confirmation dialog in the backend. '' clears a path.
     const patch: Partial<Settings> = {};
     if (path.trim() !== (settings.openconnectPath ?? '')) patch.openconnectPath = path.trim();
     if (hip.trim() !== (settings.hipScriptPath ?? '')) patch.hipScriptPath = hip.trim();

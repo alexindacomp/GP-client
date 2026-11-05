@@ -1,0 +1,866 @@
+{
+  "$comment": [
+    "Shared validation vectors: run by vitest (src/shared/validation.cases.test.ts) against",
+    "src/shared/validation.ts and by cargo test (crates/gp-core) against gp_core::validation.",
+    "A string value may be given as {repeat, times, prefix, suffix} = prefix + repeat*times + suffix.",
+    "extraArgs.args may be a non-array JSON value (untrusted input) or {repeatItem, times}."
+  ],
+  "portalUrl": [
+    {
+      "input": "vpn.example.com",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "https://vpn.example.com/",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "  https://VPN.example.com:8443/global-protect  ",
+      "ok": true,
+      "url": "https://vpn.example.com:8443"
+    },
+    {
+      "input": " https://VPN.example.com:8443/x ",
+      "ok": true,
+      "url": "https://vpn.example.com:8443"
+    },
+    {
+      "input": "пример.рф",
+      "ok": true,
+      "url": "https://xn--e1afmkfd.xn--p1ai"
+    },
+    {
+      "input": "https://Пример.РФ/путь",
+      "ok": true,
+      "url": "https://xn--e1afmkfd.xn--p1ai"
+    },
+    {
+      "input": "xn--e1afmkfd.xn--p1ai",
+      "ok": true,
+      "url": "https://xn--e1afmkfd.xn--p1ai"
+    },
+    {
+      "input": "10.0.0.1",
+      "ok": true,
+      "url": "https://10.0.0.1"
+    },
+    {
+      "input": "[2001:db8::1]",
+      "ok": true,
+      "url": "https://[2001:db8::1]"
+    },
+    {
+      "input": "[2001:db8::1]:8443",
+      "ok": true,
+      "url": "https://[2001:db8::1]:8443"
+    },
+    {
+      "input": "https://[2001:DB8::1]:8443/global-protect",
+      "ok": true,
+      "url": "https://[2001:db8::1]:8443"
+    },
+    {
+      "input": "https://vpn.example.com:443",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "vpn.example.com:443",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "VPN.example.com:443/x",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "vpn.example.com:8443",
+      "ok": true,
+      "url": "https://vpn.example.com:8443"
+    },
+    {
+      "input": "vpn.example.com:1",
+      "ok": true,
+      "url": "https://vpn.example.com:1"
+    },
+    {
+      "input": "HTTPS://VPN.EXAMPLE.COM/",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "Https://vpn.example.com/global-protect/prelogin.esp?tmp=tmp#x",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "vpn.example.com/",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "\tvpn.example.com\n",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "https://vpn.example.com\\@evil.example.com",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "https://vpn%2Eexample.com",
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "https://evil.example.com#@vpn.example.com",
+      "ok": true,
+      "url": "https://evil.example.com"
+    },
+    {
+      "input": {
+        "repeat": "a",
+        "times": 2032,
+        "prefix": "vpn.example.com/",
+        "suffix": ""
+      },
+      "ok": true,
+      "url": "https://vpn.example.com"
+    },
+    {
+      "input": "",
+      "ok": false,
+      "code": "empty"
+    },
+    {
+      "input": "   ",
+      "ok": false,
+      "code": "empty"
+    },
+    {
+      "input": {
+        "repeat": "a",
+        "times": 2049,
+        "prefix": "",
+        "suffix": ""
+      },
+      "ok": false,
+      "code": "too_long"
+    },
+    {
+      "input": "vpn example.com",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "https://exa mple.com",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "2001:db8::1",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "https://vpn.example.com:65536",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "https://vpn.example.com:8443:1",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "javascript:alert(1)",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "https:vpn.example.com",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "https://ex%00ample.com",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "vpn.example.com\u0000",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "vpn.example.com",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "https://",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "vpn.example.com:0",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "https://vpn.example.com:0/",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "https://vpn.example.com:00",
+      "ok": false,
+      "code": "invalid"
+    },
+    {
+      "input": "http://vpn.example.com",
+      "ok": false,
+      "code": "not_https"
+    },
+    {
+      "input": "HTTP://vpn.example.com",
+      "ok": false,
+      "code": "not_https"
+    },
+    {
+      "input": "ftp://x",
+      "ok": false,
+      "code": "not_https"
+    },
+    {
+      "input": "wss://vpn.example.com",
+      "ok": false,
+      "code": "not_https"
+    },
+    {
+      "input": "file:///etc/passwd",
+      "ok": false,
+      "code": "not_https"
+    },
+    {
+      "input": "https://u:p@vpn.example.com",
+      "ok": false,
+      "code": "credentials"
+    },
+    {
+      "input": "https://user:pw@vpn.example.com",
+      "ok": false,
+      "code": "credentials"
+    },
+    {
+      "input": "https://alice@vpn.example.com",
+      "ok": false,
+      "code": "credentials"
+    },
+    {
+      "input": "https://:pw@vpn.example.com",
+      "ok": false,
+      "code": "credentials"
+    }
+  ],
+  "extraArg": [
+    {
+      "arg": "-v",
+      "ok": true
+    },
+    {
+      "arg": "--verbose",
+      "ok": true
+    },
+    {
+      "arg": "-q",
+      "ok": true
+    },
+    {
+      "arg": "--quiet",
+      "ok": true
+    },
+    {
+      "arg": "--timestamp",
+      "ok": true
+    },
+    {
+      "arg": "--no-dtls",
+      "ok": true
+    },
+    {
+      "arg": "--disable-ipv6",
+      "ok": true
+    },
+    {
+      "arg": "--servercert=pin-sha256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+      "ok": true
+    },
+    {
+      "arg": "--servercert=pin-sha256:xp3scfzy3rOgQEXnfPiYKrUk7D66a8b8O+gEXaMPleE=",
+      "ok": true
+    },
+    {
+      "arg": "--mtu=1400",
+      "ok": true
+    },
+    {
+      "arg": "--mtu=576",
+      "ok": true
+    },
+    {
+      "arg": "--mtu=9000",
+      "ok": true
+    },
+    {
+      "arg": "--base-mtu=1500",
+      "ok": true
+    },
+    {
+      "arg": "--reconnect-timeout=0",
+      "ok": true
+    },
+    {
+      "arg": "--reconnect-timeout=86400",
+      "ok": true
+    },
+    {
+      "arg": "--force-dpd=30",
+      "ok": true
+    },
+    {
+      "arg": "--dtls-ciphers=AES256-GCM-SHA384:PSK-NEGOTIATE",
+      "ok": true
+    },
+    {
+      "arg": "--dtls12-ciphers=ECDHE-RSA-AES256-GCM-SHA384",
+      "ok": true
+    },
+    {
+      "arg": "--script=/tmp/evil.sh",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "-s",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--script-tun",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--external-browser=/tmp/x",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--config=/tmp/oc.conf",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--csd-wrapper=/tmp/x",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--cafile=/tmp/ca.pem",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "-c",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--certificate=/tmp/c.pem",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "-k",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--sslkey=/tmp/k",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "-D",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--syslog",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--pid-file=/etc/passwd",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--proxy=http://evil:8080",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--resolve=vpn.example.com:1.2.3.4",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--no-system-trust",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--allow-insecure-crypto",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--dump-http-traffic",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--protocol=anyconnect",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--user=root",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "-uroot",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--passwd",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--no-d",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--verb",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "-vs",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "-vv",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "positional",
+      "ok": false,
+      "code": "not_allowed"
+    },
+    {
+      "arg": "--servercert=sha1:0123",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--servercert=sha1:0123456789abcdef",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--servercert=pin-sha256:short",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--mtu=abc",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--mtu=100",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--mtu=575",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--mtu=0x500",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--mtu=99999",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--mtu=1234567",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--mtu=",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--force-dpd=0",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--dtls-ciphers=AES;rm",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "-v\u0007",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--mtu=1400\n",
+      "ok": false,
+      "code": "bad_value"
+    },
+    {
+      "arg": "--mtu",
+      "ok": false,
+      "code": "not_name_value"
+    },
+    {
+      "arg": "--no-dtls=1",
+      "ok": false,
+      "code": "not_name_value"
+    },
+    {
+      "arg": "--verbose=1",
+      "ok": false,
+      "code": "not_name_value"
+    },
+    {
+      "arg": {
+        "repeat": "A",
+        "times": 600,
+        "prefix": "--dtls-ciphers=",
+        "suffix": ""
+      },
+      "ok": false,
+      "code": "too_long"
+    }
+  ],
+  "extraArgs": [
+    {
+      "args": [
+        " --no-dtls ",
+        "--servercert=pin-sha256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "-v",
+        "--verbose",
+        "--disable-ipv6",
+        "--mtu=1400",
+        "--base-mtu=1500",
+        "--reconnect-timeout=600",
+        "--force-dpd=30",
+        "--dtls-ciphers=AES256-GCM-SHA384:PSK-NEGOTIATE"
+      ],
+      "ok": true,
+      "result": [
+        "--no-dtls",
+        "--servercert=pin-sha256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=",
+        "-v",
+        "--verbose",
+        "--disable-ipv6",
+        "--mtu=1400",
+        "--base-mtu=1500",
+        "--reconnect-timeout=600",
+        "--force-dpd=30",
+        "--dtls-ciphers=AES256-GCM-SHA384:PSK-NEGOTIATE"
+      ]
+    },
+    {
+      "args": [" -v ", "--servercert=pin-sha256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", "--mtu=1400"],
+      "ok": true,
+      "result": ["-v", "--servercert=pin-sha256:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=", "--mtu=1400"]
+    },
+    {
+      "args": [],
+      "ok": true,
+      "result": []
+    },
+    {
+      "args": {
+        "repeatItem": "-v",
+        "times": 32
+      },
+      "ok": true,
+      "result": {
+        "repeatItem": "-v",
+        "times": 32
+      }
+    },
+    {
+      "args": {
+        "repeatItem": "-v",
+        "times": 33
+      },
+      "ok": false,
+      "code": "too_many",
+      "arg": ""
+    },
+    {
+      "args": ["-v", "--proxy=x"],
+      "ok": false,
+      "code": "not_allowed",
+      "arg": "--proxy=x"
+    },
+    {
+      "args": ["-v", "  --mtu  "],
+      "ok": false,
+      "code": "not_name_value",
+      "arg": "--mtu"
+    },
+    {
+      "args": "-v",
+      "ok": false,
+      "code": "bad_value",
+      "arg": "-v"
+    },
+    {
+      "args": [1],
+      "ok": false,
+      "code": "bad_value",
+      "arg": "1"
+    },
+    {
+      "args": ["-v", null],
+      "ok": false,
+      "code": "bad_value",
+      "arg": "null"
+    }
+  ],
+  "absolutePath": [
+    {
+      "path": "/usr/sbin/openconnect",
+      "absolute": true
+    },
+    {
+      "path": "C:\\Program Files\\OC\\openconnect.exe",
+      "absolute": true
+    },
+    {
+      "path": "C:\\Program Files\\OpenConnect\\openconnect.exe",
+      "absolute": true
+    },
+    {
+      "path": "c:/x",
+      "absolute": true
+    },
+    {
+      "path": "c:/tools/openconnect.exe",
+      "absolute": true
+    },
+    {
+      "path": "\\\\server\\share\\x",
+      "absolute": true
+    },
+    {
+      "path": "\\\\server\\share\\openconnect.exe",
+      "absolute": true
+    },
+    {
+      "path": "openconnect",
+      "absolute": false
+    },
+    {
+      "path": "C:relative",
+      "absolute": false
+    },
+    {
+      "path": "C:openconnect.exe",
+      "absolute": false
+    },
+    {
+      "path": "./x",
+      "absolute": false
+    },
+    {
+      "path": "~/bin/openconnect",
+      "absolute": false
+    },
+    {
+      "path": ".\\openconnect.exe",
+      "absolute": false
+    },
+    {
+      "path": "",
+      "absolute": false
+    }
+  ],
+  "openconnectBinaryPath": [
+    {
+      "path": "/usr/sbin/openconnect",
+      "ok": true
+    },
+    {
+      "path": "C:\\Program Files\\OC\\OpenConnect.EXE",
+      "ok": true
+    },
+    {
+      "path": "C:\\Program Files\\OpenConnect\\openconnect.exe",
+      "ok": true
+    },
+    {
+      "path": "openconnect",
+      "ok": true
+    },
+    {
+      "path": "/usr/bin/python3",
+      "ok": false
+    },
+    {
+      "path": "/usr/bin/openconnect-wrapper",
+      "ok": false
+    },
+    {
+      "path": "/usr/bin/openconnect.sh",
+      "ok": false
+    },
+    {
+      "path": "C:\\Windows\\System32\\cmd.exe",
+      "ok": false
+    },
+    {
+      "path": "/opt/openconnect/",
+      "ok": false
+    }
+  ],
+  "controlChars": [
+    {
+      "text": "a\nb",
+      "match": true
+    },
+    {
+      "text": "\u0000",
+      "match": true
+    },
+    {
+      "text": "tab\there",
+      "match": true
+    },
+    {
+      "text": "del",
+      "match": true
+    },
+    {
+      "text": "Привет, world!",
+      "match": false
+    },
+    {
+      "text": "c1  is not matched",
+      "match": false
+    },
+    {
+      "text": "",
+      "match": false
+    }
+  ],
+  "ipcError": {
+    "format": [
+      {
+        "field": "extraArgs",
+        "code": "not_allowed",
+        "message": "Option \"--x\" is not allowed.",
+        "text": "[field:extraArgs][code:not_allowed] Option \"--x\" is not allowed."
+      },
+      {
+        "code": "not_confirmed",
+        "message": "The change was not confirmed",
+        "text": "[code:not_confirmed] The change was not confirmed"
+      },
+      {
+        "field": "name",
+        "message": "x",
+        "text": "[field:name] x"
+      },
+      {
+        "message": "boom",
+        "text": "boom"
+      }
+    ],
+    "parse": [
+      {
+        "text": "[field:extraArgs][code:not_allowed] Option \"--x\" is not allowed.",
+        "expected": {
+          "field": "extraArgs",
+          "code": "not_allowed",
+          "message": "Option \"--x\" is not allowed."
+        }
+      },
+      {
+        "text": "Error invoking remote method 'gp:settings:set': Error: [code:not_confirmed] The change was not confirmed",
+        "expected": {
+          "code": "not_confirmed",
+          "message": "The change was not confirmed"
+        }
+      },
+      {
+        "text": "Error invoking remote method 'gp:settings:set': ValidationError: [field:theme][code:invalid] Bad",
+        "expected": {
+          "field": "theme",
+          "code": "invalid",
+          "message": "Bad"
+        }
+      },
+      {
+        "text": "boom",
+        "expected": {
+          "message": "boom"
+        }
+      },
+      {
+        "text": "[code:internal] Internal error, see the log for details",
+        "expected": {
+          "code": "internal",
+          "message": "Internal error, see the log for details"
+        }
+      }
+    ]
+  }
+}

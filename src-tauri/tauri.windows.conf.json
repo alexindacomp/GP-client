@@ -1,0 +1,12 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "build": {
+    "beforeBuildCommand": "npm run build:renderer && npm run prepare:helper"
+  },
+  "bundle": {
+    "externalBin": ["binaries/gp-connect-helper"],
+    "resources": {
+      "resources/bin/win32/": "bin/win32/"
+    }
+  }
+}

@@ -16,7 +16,7 @@ const ACTIONS: Record<VpnErrorCode, ActionId[]> = {
   AUTH_CANCELLED: ['retry'],
   PORTAL_UNREACHABLE: ['retry', 'editProfile'],
   TLS_ERROR: ['openSettings', 'openLog'],
-  // Also used for an untrusted openconnect binary; main's message explains the fix.
+  // Also used for an untrusted openconnect binary; the backend's message explains the fix.
   PRIVILEGES_DENIED: ['openSettings', 'retry'],
   TUNNEL_FAILED: ['retry', 'openLog'],
   UNKNOWN: ['retry', 'openLog'],

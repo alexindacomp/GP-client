@@ -23,7 +23,7 @@ describe('auth prompt dialog', () => {
     });
     render(<App />);
     expect(await screen.findByRole('dialog', { name: 'Код подтверждения' })).toBeInTheDocument();
-    // Main also re-pushes it on did-finish-load: the same id must not reset the dialog.
+    // The backend also re-pushes it after a reload: the same id must not reset the dialog.
     await userEvent.type(screen.getByLabelText('Code'), '123');
     mock.emitPrompt({ id: PROMPT_ID, kind: 'otp', message: 'Code' });
     expect(screen.getByLabelText('Code')).toHaveValue('123');

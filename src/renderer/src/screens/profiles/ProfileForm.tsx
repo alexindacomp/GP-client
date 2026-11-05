@@ -27,7 +27,7 @@ interface Props {
   onCancel?: () => void;
 }
 
-/** Create/edit a portal profile. Validates locally (mirrors main) and shows main's rejection if any. */
+/** Create/edit a portal profile. Validates locally (mirrors the backend) and shows the backend's rejection if any. */
 export function ProfileForm({ profile, onSaved, onCancel }: Props): React.JSX.Element {
   const { t } = useI18n();
   const { saveProfile } = useAppData();

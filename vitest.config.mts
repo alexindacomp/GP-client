@@ -13,21 +13,15 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       include: ['src/**/*.{ts,tsx}'],
-      exclude: [
-        '**/__fixtures__/**',
-        '**/*.test.*',
-        '**/*.d.ts',
-        'src/renderer/preview/**',
-        'src/renderer/src/test/**',
-      ],
+      exclude: ['**/*.test.*', '**/*.d.ts', 'src/renderer/preview/**', 'src/renderer/src/test/**'],
     },
     projects: [
       {
         resolve: { alias },
         test: {
-          name: 'main',
+          name: 'shared',
           environment: 'node',
-          include: ['src/main/**/*.test.ts', 'src/shared/**/*.test.ts', 'src/preload/**/*.test.ts'],
+          include: ['src/shared/**/*.test.ts'],
         },
       },
       {

@@ -5,7 +5,7 @@ import { formatDuration } from '../../lib/format';
 import { Card } from '../../components/layout/Card';
 import styles from './StatusCard.module.css';
 
-/** Connection details (no traffic counters: main does not report rx/tx). */
+/** Connection details (no traffic counters: the backend does not report rx/tx). */
 export function StatusCard({ state }: { state: VpnState }): React.JSX.Element | null {
   const { t } = useI18n();
   const connected = state.status === 'connected';

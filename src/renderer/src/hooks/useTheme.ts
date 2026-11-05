@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import type { SystemInfo, Theme } from '@shared/ipc';
 
-/** Resolved theme: explicit choice wins, `system` follows the OS (via main's nativeTheme). */
+/** Resolved theme: explicit choice wins, `system` follows the OS (reported by the app via system.info / onThemeChange). */
 export function resolveTheme(theme: Theme, systemDark: boolean): 'light' | 'dark' {
   if (theme === 'system') return systemDark ? 'dark' : 'light';
   return theme;

@@ -1,0 +1,25 @@
+{
+  "identifier": "main-window",
+  "description": "The app UI (main window, local content only): the GpApi commands, event subscriptions and dragging the overlay title bar. The SAML window is not listed here and gets no IPC at all.",
+  "windows": ["main"],
+  "local": true,
+  "permissions": [
+    "core:event:allow-listen",
+    "core:event:allow-unlisten",
+    "core:window:allow-start-dragging",
+    "allow-profiles-list",
+    "allow-profiles-save",
+    "allow-profiles-remove",
+    "allow-vpn-connect",
+    "allow-vpn-disconnect",
+    "allow-vpn-get-state",
+    "allow-vpn-answer-prompt",
+    "allow-vpn-get-pending-prompts",
+    "allow-logs-get",
+    "allow-logs-open-folder",
+    "allow-settings-get",
+    "allow-settings-set",
+    "allow-system-info",
+    "allow-system-open-external"
+  ]
+}

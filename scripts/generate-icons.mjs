@@ -138,4 +138,3 @@ for (const [state, color] of Object.entries(states)) {
   write(`resources/tray/tray-${state}Template@2x.png`, 32, templates[state]);
 }
 write('resources/icon.png', 256, colored(hex('#0067C0')));
-write('build/icon.png', 512, colored(hex('#0067C0')));

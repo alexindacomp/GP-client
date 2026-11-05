@@ -138,7 +138,7 @@ const ru = {
   'settings.openconnectMissing': 'Не найден',
   'settings.openconnectUntrusted': 'Найден, но в незащищённой папке: {path}',
   'settings.openconnectUntrustedHint.win32':
-    'Установите OpenConnect-GUI в Program Files или укажите путь к openconnect.exe в папке, которую может менять только администратор.',
+    'Переустановите GP Connect (установщик кладёт OpenConnect в Program Files) или укажите путь к openconnect.exe в папке, которую может менять только администратор.',
   'settings.openconnectUntrustedHint.darwin': 'Установите OpenConnect через MacPorts: sudo port install openconnect.',
   'settings.openconnectUntrustedHint.linux': 'Установите OpenConnect из репозитория: sudo apt install openconnect.',
   'settings.openconnectPath': 'Путь к openconnect',
@@ -177,11 +177,9 @@ const ru = {
   'onboarding.noProfiles.text': 'Укажите адрес портала GlobalProtect, который выдала ваша организация.',
   'onboarding.missing.title': 'Установите OpenConnect',
   'onboarding.missing.text':
-    'GP Connect использует OpenConnect 9 или новее для подключения. Установите его и нажмите «Проверить снова».',
+    'GP Connect подключается через OpenConnect 9 или новее. Когда он будет установлен, нажмите «Проверить снова».',
   'onboarding.missing.win32':
-    'Установите OpenConnect-GUI — установщик кладёт openconnect.exe и драйвер Wintun в Program Files. Запускать сам OpenConnect-GUI не нужно. Клиент запускает openconnect только из папок, которые может менять лишь администратор.',
-  'onboarding.missing.win32Link': 'Открыть страницу загрузки OpenConnect-GUI',
-  'onboarding.missing.win32Alt': 'или через winget:',
+    'Установщик GP Connect для Windows уже включает OpenConnect, но найти его не удалось. Переустановите GP Connect (запустите установщик ещё раз — он восстановит файлы) или укажите путь к openconnect.exe вручную.',
   'onboarding.missing.darwin':
     'Homebrew не подходит: его каталоги доступны для записи пользователю, поэтому GP Connect не запускает такой openconnect с правами администратора. Установите MacPorts и выполните в Терминале:',
   'onboarding.missing.darwinLink': 'Установить MacPorts',
@@ -346,7 +344,7 @@ const en: Dictionary = {
   'settings.openconnectMissing': 'Not found',
   'settings.openconnectUntrusted': 'Found, but in an unprotected folder: {path}',
   'settings.openconnectUntrustedHint.win32':
-    'Install OpenConnect-GUI into Program Files, or set the path to an openconnect.exe in a folder only an administrator can change.',
+    'Reinstall GP Connect (its installer puts OpenConnect into Program Files), or set the path to an openconnect.exe in a folder only an administrator can change.',
   'settings.openconnectUntrustedHint.darwin': 'Install OpenConnect with MacPorts: sudo port install openconnect.',
   'settings.openconnectUntrustedHint.linux':
     'Install OpenConnect from your distribution: sudo apt install openconnect.',
@@ -385,11 +383,10 @@ const en: Dictionary = {
   'onboarding.noProfiles.title': 'Add a portal',
   'onboarding.noProfiles.text': 'Enter the GlobalProtect portal address provided by your organisation.',
   'onboarding.missing.title': 'Install OpenConnect',
-  'onboarding.missing.text': 'GP Connect uses OpenConnect 9 or newer to connect. Install it, then press “Check again”.',
+  'onboarding.missing.text':
+    'GP Connect connects through OpenConnect 9 or newer. Once it is installed, press “Check again”.',
   'onboarding.missing.win32':
-    'Install OpenConnect-GUI — its installer puts openconnect.exe and the Wintun driver into Program Files. You don’t need to run OpenConnect-GUI itself. The client runs openconnect only from folders that only an administrator can change.',
-  'onboarding.missing.win32Link': 'Open the OpenConnect-GUI download page',
-  'onboarding.missing.win32Alt': 'or with winget:',
+    'The GP Connect installer for Windows already includes OpenConnect, but it could not be found. Reinstall GP Connect (run the installer again to repair the files) or set the path to openconnect.exe manually.',
   'onboarding.missing.darwin':
     'Homebrew is not suitable: its folders are user-writable, so GP Connect will not run that openconnect as administrator. Install MacPorts and run in Terminal:',
   'onboarding.missing.darwinLink': 'Install MacPorts',
@@ -551,7 +548,7 @@ const uk: Dictionary = {
   'settings.openconnectMissing': 'Не знайдено',
   'settings.openconnectUntrusted': 'Знайдено, але в незахищеній папці: {path}',
   'settings.openconnectUntrustedHint.win32':
-    'Встановіть OpenConnect-GUI у Program Files або вкажіть шлях до openconnect.exe у папці, яку може змінювати тільки адміністратор.',
+    'Перевстановіть GP Connect (інсталятор розміщує OpenConnect у Program Files) або вкажіть шлях до openconnect.exe у папці, яку може змінювати тільки адміністратор.',
   'settings.openconnectUntrustedHint.darwin': 'Встановіть OpenConnect через MacPorts: sudo port install openconnect.',
   'settings.openconnectUntrustedHint.linux': 'Встановіть OpenConnect із репозиторію: sudo apt install openconnect.',
   'settings.openconnectPath': 'Шлях до openconnect',
@@ -590,11 +587,9 @@ const uk: Dictionary = {
   'onboarding.noProfiles.text': 'Вкажіть адресу порталу GlobalProtect, яку надала ваша організація.',
   'onboarding.missing.title': 'Встановіть OpenConnect',
   'onboarding.missing.text':
-    'Для підключення GP Connect використовує OpenConnect 9 або новіший. Встановіть його й натисніть «Перевірити ще раз».',
+    'GP Connect підключається через OpenConnect 9 або новіший. Коли його буде встановлено, натисніть «Перевірити ще раз».',
   'onboarding.missing.win32':
-    'Встановіть OpenConnect-GUI — інсталятор розміщує openconnect.exe і драйвер Wintun у Program Files. Запускати сам OpenConnect-GUI не потрібно. Клієнт запускає openconnect лише з папок, які може змінювати тільки адміністратор.',
-  'onboarding.missing.win32Link': 'Відкрити сторінку завантаження OpenConnect-GUI',
-  'onboarding.missing.win32Alt': 'або через winget:',
+    'Інсталятор GP Connect для Windows уже містить OpenConnect, але знайти його не вдалося. Перевстановіть GP Connect (запустіть інсталятор ще раз — він відновить файли) або вкажіть шлях до openconnect.exe вручну.',
   'onboarding.missing.darwin':
     'Homebrew не підходить: його папки доступні для запису користувачеві, тому GP Connect не запускає такий openconnect із правами адміністратора. Встановіть MacPorts і виконайте в Терміналі:',
   'onboarding.missing.darwinLink': 'Встановити MacPorts',

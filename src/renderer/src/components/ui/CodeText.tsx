@@ -7,7 +7,7 @@ import styles from './CodeText.module.css';
 const PIN_PREFIX = '--servercert=pin-sha256:';
 /**
  * Tokens rendered as code inside prose: the servercert pin (placeholder `<…>` or a real 43+`=`
- * base64 pin) and the install commands main suggests. Trailing punctuation stays outside.
+ * base64 pin) and the install commands the backend suggests. Trailing punctuation stays outside.
  */
 const TOKEN_RE = /(--servercert=pin-sha256:(?:<…>|[A-Za-z0-9+/]{43}=)|sudo (?:port|apt) install openconnect)/;
 

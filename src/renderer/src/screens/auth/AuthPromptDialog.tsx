@@ -18,7 +18,7 @@ interface Props {
   onRemember: (profileId: string, password: string) => void;
 }
 
-/** Splits main's prompt text: the last line is the field label, earlier lines are server context. */
+/** Splits the backend's prompt text: the last line is the field label, earlier lines are server context. */
 function splitMessage(message: string): { context: string; label: string | undefined } {
   const lines = message
     .split('\n')

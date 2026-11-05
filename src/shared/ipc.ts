@@ -1,7 +1,7 @@
 /**
- * IPC contract between the main process and the renderer.
- * Single source of truth (see docs/SPEC.md, section "IPC-контракт").
- * The preload script exposes an object implementing {@link GpApi} as `window.gp`.
+ * Contract between the Rust backend (src-tauri commands/events) and the renderer.
+ * Single source of truth for the UI; `window.gp` implements {@link GpApi}
+ * (src/renderer/src/bridge/tauri.ts, Tauri command per method, see docs/ARCHITECTURE-TAURI.md).
  */
 
 export type AuthMode = 'auto' | 'password' | 'saml';
@@ -152,52 +152,7 @@ export interface GpApi {
     onThemeChange(cb: (dark: boolean) => void): Unsubscribe;
     openExternal(url: string): Promise<void>;
   };
-  /** For the custom title bar. Fire-and-forget. */
-  window: {
-    minimize(): void;
-    close(): void;
-  };
 }
-
-/** IPC channel names, `gp:<area>:<action>`. */
-export const IPC = {
-  profiles: {
-    list: 'gp:profiles:list',
-    save: 'gp:profiles:save',
-    remove: 'gp:profiles:remove',
-  },
-  vpn: {
-    connect: 'gp:vpn:connect',
-    disconnect: 'gp:vpn:disconnect',
-    getState: 'gp:vpn:getState',
-    answerPrompt: 'gp:vpn:answerPrompt',
-    getPendingPrompts: 'gp:vpn:getPendingPrompts',
-    /** main → renderer event: VpnState */
-    state: 'gp:vpn:state',
-    /** main → renderer event: AuthPrompt */
-    prompt: 'gp:vpn:prompt',
-  },
-  logs: {
-    get: 'gp:logs:get',
-    /** main → renderer event: string */
-    line: 'gp:logs:line',
-    openFolder: 'gp:logs:openFolder',
-  },
-  settings: {
-    get: 'gp:settings:get',
-    set: 'gp:settings:set',
-  },
-  system: {
-    info: 'gp:system:info',
-    /** main → renderer event: boolean (shouldUseDarkColors) */
-    themeChanged: 'gp:system:themeChanged',
-    openExternal: 'gp:system:openExternal',
-  },
-  window: {
-    minimize: 'gp:window:minimize',
-    close: 'gp:window:close',
-  },
-} as const;
 
 export const DEFAULT_SETTINGS: Settings = {
   theme: 'system',

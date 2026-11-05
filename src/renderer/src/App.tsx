@@ -6,7 +6,7 @@ import { useVpnState } from './hooks/useVpnState';
 import { useAuthPrompt } from './hooks/useAuthPrompt';
 import { useRememberPassword } from './hooks/useRememberPassword';
 import type { NavTarget } from './navigation';
-import { TitleBar } from './components/layout/TitleBar';
+import { TitleBar, titleBarMode } from './components/layout/TitleBar';
 import { NavBar } from './components/layout/NavBar';
 import { Button } from './components/ui/Button';
 import { Spinner } from './components/ui/Spinner';
@@ -59,12 +59,17 @@ function Shell(): React.JSX.Element {
     document.documentElement.lang = settings.language;
   }, [settings.language]);
 
+  const titleBar = titleBarMode(info.platform);
+  useEffect(() => {
+    document.documentElement.dataset.titlebar = titleBar;
+  }, [titleBar]);
+
   const promptProfile = profiles.find((p) => p.id === state?.profileId);
 
   return (
     <I18nProvider lang={settings.language}>
       <div className={styles.app}>
-        <TitleBar platform={info.platform} />
+        <TitleBar mode={titleBar} />
         <main className={styles.main}>
           <Screen nav={nav} navigate={navigate} key={`${nav.view}-${nav.seq}`} state={state} />
         </main>

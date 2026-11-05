@@ -1,5 +1,5 @@
 // DEV-ONLY: serves the renderer in a plain browser with a mocked window.gp (npm run preview:web).
-// Not used by electron-vite; the Electron build only bundles src/renderer/index.html.
+// Not used by the app build: vite.renderer.config.mts bundles src/renderer/index.html only.
 import { resolve } from 'node:path';
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';

@@ -9,19 +9,25 @@ permissions:
   contents: write
 
 jobs:
-  # Create the release once, so the parallel build jobs only upload assets to it
-  # (avoids racing electron-builder jobs creating duplicate releases).
+  # Create the release once, so the parallel build jobs only upload assets to it.
   create-release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
 
-      - name: Check that the tag matches package.json version
+      # The app version comes from package.json (tauri.conf.json "version"); the Rust crates use the
+      # workspace version in Cargo.toml. Both must equal the tag.
+      - name: Check that the tag matches the package.json and Cargo.toml versions
         shell: bash
         run: |
           version="$(node -p "require('./package.json').version")"
+          cargo_version="$(sed -n '/^\[workspace.package\]/,/^\[/s/^version *= *"\(.*\)"/\1/p' Cargo.toml)"
           if [ "${GITHUB_REF_NAME}" != "v${version}" ]; then
             echo "::error::Tag ${GITHUB_REF_NAME} does not match package.json version v${version}"
+            exit 1
+          fi
+          if [ "${GITHUB_REF_NAME}" != "v${cargo_version}" ]; then
+            echo "::error::Tag ${GITHUB_REF_NAME} does not match the Cargo.toml workspace version v${cargo_version}"
             exit 1
           fi
 
@@ -40,40 +46,129 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: windows (nsis + portable, x64)
+          # Windows: NSIS installer only (per-machine; includes gp-connect-helper.exe and OpenConnect).
+          - name: windows (nsis, x64)
             os: windows-latest
-            targets: --win nsis portable --x64
-          - name: macos (dmg, arm64 + x64)
+            target: x86_64-pc-windows-msvc
+            bundles: nsis
+          - name: macos (dmg, arm64)
             os: macos-latest
-            targets: --mac dmg --arm64 --x64
-          - name: linux (AppImage + deb, x64)
-            os: ubuntu-latest
-            targets: --linux AppImage deb --x64
+            target: aarch64-apple-darwin
+            bundles: dmg
+          - name: macos (dmg, x64)
+            os: macos-latest
+            target: x86_64-apple-darwin
+            bundles: dmg
+          # Oldest supported Ubuntu with WebKitGTK 4.1: the AppImage then runs on newer glibc too.
+          - name: linux (deb + AppImage, x64)
+            os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundles: deb,appimage
     runs-on: ${{ matrix.os }}
+    env:
+      # Optional Windows code signing; every signing step is skipped when these are empty.
+      WINDOWS_CERTIFICATE: ${{ secrets.WINDOWS_CERTIFICATE }}
+      WINDOWS_CERTIFICATE_PASSWORD: ${{ secrets.WINDOWS_CERTIFICATE_PASSWORD }}
+      AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      AZURE_SIGNING_ENDPOINT: ${{ secrets.AZURE_SIGNING_ENDPOINT }}
+      AZURE_SIGNING_ACCOUNT: ${{ secrets.AZURE_SIGNING_ACCOUNT }}
+      AZURE_CERTIFICATE_PROFILE: ${{ secrets.AZURE_CERTIFICATE_PROFILE }}
     steps:
       - uses: actions/checkout@v5
+
+      - name: Install Linux build dependencies (WebKitGTK, GTK, tray)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libssl-dev patchelf
 
       - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
 
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.target }}
+
       - run: npm ci
       - run: npm test
-      - run: npm run build
 
-      - name: Package and upload to the GitHub release
-        # Always publish to the repository this workflow runs in (package.json
-        # "repository" is metadata only and may still contain a placeholder).
+      # Pinned, SHA-256-verified official OpenConnect build; fails the job on any mismatch.
+      - name: Fetch the bundled OpenConnect (Windows)
+        if: runner.os == 'Windows'
+        run: npm run fetch:openconnect:win
+
+      # Signing config for `tauri build --config` (signs the app, the helper sidecar and the installer).
+      - name: Prepare Windows code signing (pfx)
+        if: runner.os == 'Windows' && env.WINDOWS_CERTIFICATE != ''
+        shell: pwsh
+        run: |
+          $pfx = Join-Path $env:RUNNER_TEMP 'codesign.pfx'
+          [IO.File]::WriteAllBytes($pfx, [Convert]::FromBase64String($env:WINDOWS_CERTIFICATE))
+          $pw = ConvertTo-SecureString $env:WINDOWS_CERTIFICATE_PASSWORD -AsPlainText -Force
+          $cert = Import-PfxCertificate -FilePath $pfx -CertStoreLocation Cert:\CurrentUser\My -Password $pw
+          Remove-Item $pfx
+          $cfg = @{ bundle = @{ windows = @{ certificateThumbprint = $cert.Thumbprint; digestAlgorithm = 'sha256'; timestampUrl = 'http://timestamp.digicert.com' } } }
+          $file = Join-Path $env:RUNNER_TEMP 'tauri.sign.json'
+          $cfg | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 $file
+          "TAURI_SIGN_ARGS=--config $file" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
+      - name: Prepare Windows code signing (Azure Trusted Signing)
+        if: runner.os == 'Windows' && env.WINDOWS_CERTIFICATE == '' && env.AZURE_CLIENT_SECRET != ''
+        shell: pwsh
+        run: |
+          cargo install trusted-signing-cli --locked
+          $cmd = "trusted-signing-cli -e $env:AZURE_SIGNING_ENDPOINT -a $env:AZURE_SIGNING_ACCOUNT -c $env:AZURE_CERTIFICATE_PROFILE -d `"GP Connect`" %1"
+          $cfg = @{ bundle = @{ windows = @{ signCommand = $cmd } } }
+          $file = Join-Path $env:RUNNER_TEMP 'tauri.sign.json'
+          $cfg | ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 $file
+          "TAURI_SIGN_ARGS=--config $file" | Out-File -Append -Encoding utf8 $env:GITHUB_ENV
+
+      # macOS: ad-hoc signature (bundle.macOS.signingIdentity "-"), required to run on Apple Silicon.
+      # Windows: beforeBuildCommand also stages gp-connect-helper.exe (scripts/prepare-helper.mjs).
+      - name: Build
         shell: bash
-        run: >-
-          npx electron-builder ${{ matrix.targets }} --publish always
-          -c.publish.provider=github
-          -c.publish.owner=${{ github.repository_owner }}
-          -c.publish.repo=${{ github.event.repository.name }}
+        run: npx tauri build --target ${{ matrix.target }} --bundles ${{ matrix.bundles }} ${TAURI_SIGN_ARGS:-}
+
+      - name: Rename to the stable artifact names
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          b="target/${{ matrix.target }}/release/bundle"
+          mkdir -p upload
+          # Copies the single file matching the glob to upload/<name>; fails (visibly) otherwise.
+          # Runs in the current shell, not in $(…), so the error and the exit status are not lost.
+          put() {
+            local name="$1"; shift
+            if [ "$#" -ne 1 ]; then
+              echo "::error::expected exactly one file for ${name}, got: ${*:-none}" >&2
+              exit 1
+            fi
+            cp "$1" "upload/${name}"
+          }
+          case "${{ matrix.target }}" in
+            x86_64-pc-windows-msvc)  put GP-Connect-Setup-x64.exe "$b"/nsis/*-setup.exe ;;
+            aarch64-apple-darwin)    put GP-Connect-mac-arm64.dmg "$b"/dmg/*.dmg ;;
+            x86_64-apple-darwin)     put GP-Connect-mac-x64.dmg "$b"/dmg/*.dmg ;;
+            x86_64-unknown-linux-gnu)
+              put GP-Connect-linux-x86_64.AppImage "$b"/appimage/*.AppImage
+              put gp-connect_amd64.deb "$b"/deb/*.deb ;;
+            *) echo "::error::unknown target ${{ matrix.target }}" >&2; exit 1 ;;
+          esac
+          ls -la upload
+
+      # Always publish to the repository this workflow runs in.
+      - name: Upload to the GitHub release
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # Unsigned builds: no Apple Developer ID / Windows code-signing certificate.
-          CSC_IDENTITY_AUTO_DISCOVERY: 'false'
-          # Allow uploading to the release created above even when a job is re-run later.
-          EP_GH_IGNORE_TIME: 'true'
+        run: gh release upload "${GITHUB_REF_NAME}" upload/* --clobber --repo "${GITHUB_REPOSITORY}"

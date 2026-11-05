@@ -7,7 +7,7 @@ import styles from './ErrorDetail.module.css';
 
 interface Props {
   error: NonNullable<VpnState['error']>;
-  /** Hide main's next-step text (e.g. while main is already reconnecting by itself). */
+  /** Hide the backend's next-step text (e.g. while it is already reconnecting by itself). */
   hideMessage?: boolean;
 }
 

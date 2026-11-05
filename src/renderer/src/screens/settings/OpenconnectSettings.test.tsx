@@ -66,11 +66,7 @@ describe('openconnect settings', () => {
     expect(screen.getByRole('button', { name: 'Сохранение…' })).toBeDisabled();
     expect(screen.getByText('Подтвердите изменение в системном окне.')).toBeInTheDocument();
 
-    reject(
-      new Error(
-        "Error invoking remote method 'gp:settings:set': Error: [code:not_confirmed] The change was not confirmed",
-      ),
-    );
+    reject(new Error('[code:not_confirmed] The change was not confirmed'));
     expect(await screen.findByText('Изменение не подтверждено, прежние значения восстановлены.')).toBeInTheDocument();
     expect(field).toHaveValue('/usr/bin/openconnect');
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
@@ -79,9 +75,7 @@ describe('openconnect settings', () => {
   it('shows a marked extraArgs rejection under that field', async () => {
     const mock = await openSettings();
     mock.gp.settings.set.mockRejectedValueOnce(
-      new Error(
-        'Error invoking remote method \'gp:settings:set\': Error: [field:extraArgs][code:not_allowed] Option "--mtu" is not allowed',
-      ),
+      new Error('[field:extraArgs][code:not_allowed] Option "--mtu" is not allowed'),
     );
     await userEvent.type(screen.getByLabelText('Дополнительные аргументы'), '--mtu=1300');
     await userEvent.click(screen.getByRole('button', { name: 'Сохранить' }));
@@ -95,9 +89,7 @@ describe('openconnect settings', () => {
   it('routes a marked openconnectPath rejection to that field with localized text', async () => {
     const mock = await openSettings();
     mock.gp.settings.set.mockRejectedValueOnce(
-      new Error(
-        "Error invoking remote method 'gp:settings:set': Error: [field:openconnectPath][code:not_openconnect] openconnectPath must point to the openconnect binary",
-      ),
+      new Error('[field:openconnectPath][code:not_openconnect] openconnectPath must point to the openconnect binary'),
     );
     await userEvent.type(screen.getByLabelText('Путь к openconnect'), '/usr/sbin/openconnect');
     await userEvent.click(screen.getByRole('button', { name: 'Сохранить' }));

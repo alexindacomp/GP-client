@@ -1,10 +1,15 @@
 node_modules/
-out/
-dist/
 *.log
 .DS_Store
 coverage/
 graphify-out/
-resources/bin/*/*
-!resources/bin/*/.gitkeep
 *.tsbuildinfo
+
+# Rust
+target/
+dist-renderer/
+
+# Tauri: staged sidecar (scripts/prepare-helper.mjs)
+src-tauri/binaries/
+src-tauri/resources/bin/
+src-tauri/gen/

@@ -100,7 +100,6 @@ export function installGpMock(opts: GpMockOptions = {}): GpMock {
       onThemeChange: vi.fn(theme.on),
       openExternal: vi.fn(async () => undefined),
     },
-    window: { minimize: vi.fn(), close: vi.fn() },
   } satisfies GpApi as MockedGp;
 
   window.gp = gp;

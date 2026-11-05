@@ -24,7 +24,6 @@
   background-color: var(--color-control);
   color: var(--color-text);
   transition: background-color var(--duration-fast) var(--easing-standard);
-  -webkit-app-region: no-drag;
 }
 
 .control::placeholder {

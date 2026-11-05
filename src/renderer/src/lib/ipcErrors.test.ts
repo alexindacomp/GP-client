@@ -3,7 +3,7 @@ import { translate, type MessageKey, type Params } from '../i18n/dictionary';
 import { localizeIpcError } from './ipcErrors';
 
 const t = (key: MessageKey, params?: Params): string => translate('ru', key, params);
-const wrap = (text: string): Error => new Error(`Error invoking remote method 'gp:x': Error: ${text}`);
+const wrap = (text: string): Error => new Error(text); // as the Tauri bridge rejects
 
 describe('localizeIpcError', () => {
   it('localizes by field + code', () => {

@@ -41,7 +41,7 @@ export function ConnectScreen({ state, onNavigate }: Props): React.JSX.Element {
   const [dismissed, setDismissed] = useState<VpnState | null>(null);
 
   const idle = isIdle(state.status);
-  // While an attempt/connection runs, the active profile is the one main reports.
+  // While an attempt/connection runs, the active profile is the one the backend reports.
   const wantedId = !idle && state.profileId ? state.profileId : (picked ?? settings.lastProfileId ?? state.profileId);
   const profile: Profile | undefined = profiles.find((p) => p.id === wantedId) ?? profiles[0];
 

@@ -5,7 +5,7 @@ export interface AppData {
   info: SystemInfo;
   settings: Settings;
   profiles: Profile[];
-  /** Re-detects openconnect (main refreshes its lookup on every call). */
+  /** Re-detects openconnect (the backend refreshes its lookup on every call). */
   refreshInfo(): Promise<SystemInfo>;
   updateSettings(patch: Partial<Settings>): Promise<Settings>;
   saveProfile(input: ProfileInput, password?: string): Promise<Profile>;

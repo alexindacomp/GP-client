@@ -16,7 +16,6 @@
   transition:
     background-color var(--duration-fast) var(--easing-standard),
     border-color var(--duration-fast) var(--easing-standard);
-  -webkit-app-region: no-drag;
 }
 
 .button:hover:not(:disabled) {

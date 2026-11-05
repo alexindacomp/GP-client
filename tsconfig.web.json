@@ -12,11 +12,6 @@
       "@shared/*": ["./src/shared/*"]
     }
   },
-  "include": [
-    "src/renderer/**/*.ts",
-    "src/renderer/**/*.tsx",
-    "src/shared/**/*",
-    "src/preload/gp-api.d.ts",
-    "vitest.setup.renderer.ts"
-  ]
+  "include": ["src/renderer/**/*.ts", "src/renderer/**/*.tsx", "src/shared/**/*", "vitest.setup.renderer.ts"],
+  "exclude": ["src/shared/**/*.test.ts"]
 }

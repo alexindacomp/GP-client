@@ -125,8 +125,8 @@ export function isOpenconnectBinaryPath(p: string): boolean {
 
 /**
  * Errors rejected by `window.gp` calls carry machine-readable markers in front of
- * the English message: `[field:<name>][code:<code>] message`. Electron wraps
- * them as "Error invoking remote method '<channel>': Error: …".
+ * the English message: `[field:<name>][code:<code>] message` (Tauri commands
+ * reject with exactly that string, see src-tauri/src/commands.rs).
  */
 export interface IpcErrorInfo {
   field?: string;
@@ -142,6 +142,7 @@ export function formatIpcError(info: IpcErrorInfo): string {
 
 export function parseIpcError(input: unknown): IpcErrorInfo {
   const raw = input instanceof Error ? input.message : typeof input === 'string' ? input : String(input);
+  // A legacy "Error invoking remote method '…': Error: " wrapper is stripped if present (harmless otherwise).
   const text = raw.replace(/^Error invoking remote method '[^']*': (?:\w*Error: )?/, '');
   const field = /\[field:([A-Za-z0-9_.-]+)\]/.exec(text)?.[1];
   const code = /\[code:([A-Za-z0-9_.-]+)\]/.exec(text)?.[1];

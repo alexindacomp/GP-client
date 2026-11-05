@@ -12,7 +12,7 @@ function cap(lines: LogLine[]): LogLine[] {
   return lines.length > MAX_LOG_LINES ? lines.slice(lines.length - MAX_LOG_LINES) : lines;
 }
 
-/** Log snapshot plus live lines, capped like main's ring buffer. */
+/** Log snapshot plus live lines, capped like the backend's ring buffer. */
 export function useLogLines(): { lines: LogLine[]; loaded: boolean } {
   const [lines, setLines] = useState<LogLine[]>([]);
   const [loaded, setLoaded] = useState(false);

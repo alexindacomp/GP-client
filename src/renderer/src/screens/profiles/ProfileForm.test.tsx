@@ -64,9 +64,7 @@ describe('profile form', () => {
 
   it('routes a marked main-process rejection to its field', async () => {
     const mock = await openNewProfile();
-    mock.gp.profiles.save.mockRejectedValueOnce(
-      new Error("Error invoking remote method 'gp:profiles:save': Error: [field:portalUrl][code:credentials] no creds"),
-    );
+    mock.gp.profiles.save.mockRejectedValueOnce(new Error('[field:portalUrl][code:credentials] no creds'));
     await userEvent.type(screen.getByLabelText('Название'), 'X');
     await userEvent.type(screen.getByLabelText('Адрес портала'), 'vpn.example.com');
     await userEvent.click(screen.getByRole('button', { name: 'Сохранить' }));
@@ -80,9 +78,7 @@ describe('profile form', () => {
 
   it('shows the main-process rejection message', async () => {
     const mock = await openNewProfile();
-    mock.gp.profiles.save.mockRejectedValueOnce(
-      new Error("Error invoking remote method 'gp:profiles:save': Error: name is too long (max 100)"),
-    );
+    mock.gp.profiles.save.mockRejectedValueOnce(new Error('name is too long (max 100)'));
     await userEvent.type(screen.getByLabelText('Название'), 'X');
     await userEvent.type(screen.getByLabelText('Адрес портала'), 'vpn.example.com');
     await userEvent.click(screen.getByRole('button', { name: 'Сохранить' }));

@@ -10,7 +10,7 @@ export const PORTAL_ERROR_KEYS: Record<PortalUrlErrorCode, MessageKey> = {
   credentials: 'form.error.portalCredentials',
 };
 
-/** Arg-less texts for main's extraArgs rejections (the client check names the argument). */
+/** Arg-less texts for the backend's extraArgs rejections (the client check names the argument). */
 const EXTRA_ARGS_KEYS: Record<ExtraArgErrorCode, MessageKey> = {
   not_allowed: 'ipc.extraArgs.not_allowed',
   bad_value: 'ipc.extraArgs.bad_value',
@@ -35,7 +35,7 @@ const GENERAL_KEYS: Record<string, MessageKey> = {
 export interface LocalizedIpcError {
   field?: string;
   code?: string;
-  /** Localized by code, or main's (English) message when the code is unknown/generic. */
+  /** Localized by code, or the backend's (English) message when the code is unknown/generic. */
   text: string;
 }
 

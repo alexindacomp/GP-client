@@ -1,39 +1,54 @@
 # GP Connect — cross-platform GlobalProtect VPN client
 
 ## Goal
-A friendlier replacement for the stock Palo Alto GlobalProtect client on Windows 11 (light/dark
-theme), Ubuntu (latest LTS, GNOME) and macOS. Connect in one or two clicks, with clear statuses
+A friendlier replacement for the stock Palo Alto GlobalProtect client on Windows 10/11 (light/dark
+theme), Ubuntu/Debian (GNOME) and macOS. Connect in one or two clicks, with clear statuses
 and errors.
 
 ## Stack
-- Electron (main + preload + renderer), strict TypeScript, Vite (`electron-vite`), React 18.
+- **Tauri 2**: Rust backend + the OS WebView (WebView2 / WKWebView / WebKitGTK 4.1). Rust workspace:
+  `crates/gp-core` (pure logic), `crates/gp-elevate` (elevation), `crates/gp-helper` (Windows
+  elevated helper `gp-connect-helper.exe`), `src-tauri` (app shell). Async runtime: tokio.
+- UI: React 18, strict TypeScript, Vite; `window.gp` is implemented on top of `@tauri-apps/api`
+  (`src/renderer/src/bridge/tauri.ts`).
 - VPN engine: the external **OpenConnect ≥ 9** binary with `--protocol=gp`. The client does not
-  implement the tunnel; it manages the openconnect process.
-- Distributables: `electron-builder` (Windows: NSIS installer + portable; Linux: AppImage + deb;
-  macOS: dmg).
-- Releases: tag `vX.Y.Z` → `.github/workflows/release.yml` builds all platforms and attaches them
-  to the GitHub Release; `.github/workflows/ci.yml` runs on push/PR.
-- Tests: Vitest (unit tests for main logic, React components via @testing-library/react).
+  implement the tunnel; it manages the openconnect process. On Windows OpenConnect v9.21 + Wintun
+  is bundled into the installer.
+- Distributables: the Tauri bundler (Windows: NSIS installer, per-machine, no portable build;
+  Linux: AppImage + deb; macOS: dmg for arm64 and x64).
+- Releases: tag `v<version>` (must equal the package.json version) → `.github/workflows/release.yml`
+  builds all platforms and attaches them to the GitHub Release under stable names;
+  `.github/workflows/ci.yml` runs on push/PR on Linux, Windows and macOS.
+- Tests: `cargo test --workspace` (backend logic, fixture-based) and Vitest (src/shared, React
+  components via @testing-library/react); shared fixtures in `fixtures/`.
 
 ## Layout
 ```
-src/shared/      — IPC contract and shared types (single source of truth)
-src/main/        — main process: VPN engine, auth, settings, tray, IPC handlers
-src/preload/     — contextBridge: window.gp (typed API)
-src/renderer/    — React UI
+src/shared/          — IPC contract and shared types (single source of truth for the UI)
+src/renderer/        — React UI (bridge/tauri.ts implements window.gp)
+crates/gp-core/      — VPN engine, prelogin, SAML parsing, openconnect, stores, validation, logging
+crates/gp-elevate/   — pkexec / osascript / Windows helper client, helper protocol, Windows ACL probe
+crates/gp-helper/    — gp-connect-helper.exe (Windows, runs elevated)
+src-tauri/           — Tauri commands and events, windows, SAML window, tray, keystore, migration
 ```
+Architecture details: [ARCHITECTURE-TAURI.md](ARCHITECTURE-TAURI.md).
 
-## Functionality (main / "backend")
+## Functionality ("backend", Rust)
 1. **Portal profiles**: list of {id, name, portalUrl, username?, preferredGateway?, authMode: 'auto'|'password'|'saml'}.
-   Stored in `app.getPath('userData')/profiles.json`. Passwords only via `safeStorage`
-   (OS encryption), optional "remember password".
+   Stored in `<app data dir>/profiles.json` (identifier `com.gpconnect.client`). Passwords only in
+   the OS keystore (`keyring`: Credential Manager / Keychain / Secret Service), optional
+   "remember password"; without a keystore the password is not stored.
 2. **Prelogin**: `POST https://<portal>/global-protect/prelogin.esp?tmp=tmp&clientVer=4100&clientos=<Windows|Linux|Mac>`
    — parse the XML: `saml-auth-method`, `saml-request` (base64), `auth-message`, `username-label`, `password-label`.
    If `saml-request` is present → SAML, otherwise password.
-3. **SAML**: a separate `BrowserWindow` (isolated partition `persist:saml-<profileId>`) loads the
-   SAML request (REDIRECT → URL, POST → HTML form). The response is captured from the headers
-   `saml-username`, `prelogin-cookie` / `portal-userauthcookie` (via `webRequest.onHeadersReceived`)
-   or from the same values in an HTML comment `<!-- <saml-auth-status>1</saml-auth-status>... -->`.
+3. **SAML**: a separate webview window (persistent data store isolated per profile:
+   `<app local data>/saml/<profileId>` on Windows/Linux, a WKWebsiteDataStore per profile on
+   macOS 14+; cleared on profile removal; no IPC) loads the SAML request (REDIRECT → URL, POST →
+   HTML form). The response is read from the HTML comment
+   `<!-- <saml-auth-status>1</saml-auth-status>... -->` after each top-level page load (all OSes) and,
+   on Windows, also from the headers `saml-auth-status`, `saml-username`, `prelogin-cookie` /
+   `portal-userauthcookie` (WebView2 `WebResourceResponseReceived`). Only top-level https
+   documents from the portal host are trusted.
    The result is passed to openconnect: `--usergroup=portal:prelogin-cookie` (or `portal-userauthcookie`),
    `--user=<saml-username>`, cookie on stdin (`--passwd-on-stdin`).
 4. **Password authentication**: openconnect with `--user`, password on stdin. openconnect MFA/OTP
@@ -44,29 +59,39 @@ src/renderer/    — React UI
 6. **Process management** (`VpnEngine`, state machine):
    `disconnected → prelogin → authenticating → connecting → connected → disconnecting → disconnected`,
    plus `error` (with a code and a human-readable message) and `reconnecting`.
-   - Elevation: Linux — `pkexec` (polkit policy file in `build/linux/`); macOS — helper started via
-     `osascript ... with administrator privileges` (no sudoers/`NOPASSWD` rule: it would let any
-     user process run openconnect as root); Windows — the app itself runs `asInvoker`, openconnect
-     is started through an elevated helper (UAC); the Wintun driver comes with OpenConnect-GUI.
+   - Elevation: Linux — `pkexec` (polkit policy `build/linux/com.gpconnect.openconnect.policy`,
+     `auth_admin`); macOS — root wrapper started via `osascript ... with administrator privileges`
+     (no sudoers/`NOPASSWD` rule: it would let any user process run openconnect as root);
+     Windows — the app runs unelevated, openconnect is started by `gp-connect-helper.exe` launched
+     with UAC, which re-validates the request as administrator (trust check, argv allowlist) and
+     relays I/O over an authenticated named pipe; Wintun comes with the bundled OpenConnect.
    - Before every elevated launch the binary and HIP script must pass a trust check (root-owned /
      admin-only location, see README); otherwise `PRIVILEGES_DENIED`.
-   - Binary lookup: configured path → bundled `resources/bin/<platform>/openconnect` → PATH →
-     standard install directories.
+   - Binary lookup: configured path → bundled `<resources>/bin/<platform>/openconnect[.exe]`
+     (Windows: `C:\Program Files\GP Connect\bin\win32\`) → PATH → standard install directories;
+     trusted candidates win over untrusted ones.
    - Disconnect: graceful SIGINT (Ctrl+C on Windows), forced kill after a 10 s timeout.
    - stdout/stderr parsing: "Connected as <ip>", "ESP session established", authentication and
-     DNS errors. Log kept in a ring buffer (≤ 2000 lines) plus a file in userData/logs.
+     DNS errors. Log kept in a ring buffer (≤ 2000 lines) plus `gp-connect.log` in the app log dir
+     (rotated at 5 MB).
    - Stats: connection time, assigned IP, gateway; rx/tx are not shown.
    - Auto-reconnect on connection loss (configurable), backoff 2/5/10/30 s.
 7. **Tray / menu bar**: status icon (disconnected/connecting/connected), menu:
    Connect/Disconnect, profile selection, Show window, Quit. Closing the window hides it to the tray.
    Template icons for the macOS menu bar.
-8. **Settings**: theme (`system`|`light`|`dark`) via `nativeTheme.themeSource`, launch at login,
+8. **Settings**: theme (`system`|`light`|`dark`) via the window theme, launch at login,
    connect on startup, auto-reconnect, openconnect path, extra arguments (allowlisted),
    HIP script (path to `hipreport.sh`, `--csd-wrapper`), language (ru/en/uk). Changing the
-   openconnect path, HIP script or extra arguments requires confirmation in a system dialog.
-9. **Security**: `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false`,
-   strict CSP, validation of all IPC input, https portals only, no secrets in logs
-   (mask cookies/passwords), single app instance (`requestSingleInstanceLock`).
+   openconnect path, HIP script or extra arguments requires confirmation in a native dialog;
+   values changed on disk are re-confirmed before the next elevated launch (per-field HMAC whose
+   key is in the OS keystore).
+9. **Security**: Tauri capabilities allow only the GpApi commands and event listening, only for
+   the main window with local content (the SAML window gets no IPC); `withGlobalTauri: false`;
+   strict CSP; navigation of the main window locked to the app origin; validation of all command
+   input; https portals only; no secrets in logs (mask cookies/passwords); single app instance
+   (`tauri-plugin-single-instance`).
+10. **Migration**: on first start, `settings.json` and `profiles.json` of the Electron version are
+   copied once; saved passwords are re-entered; sensitive settings are re-confirmed once.
 
 ## IPC contract (`src/shared/ipc.ts`, exposed as `window.gp`)
 ```ts
@@ -91,7 +116,8 @@ interface Settings { theme: 'system'|'light'|'dark'; launchAtLogin: boolean;
   extraArgs: string[]; hipScriptPath?: string; language: Language;
   lastProfileId?: string; }
 interface SystemInfo { platform: 'win32'|'darwin'|'linux'; openconnectVersion?: string;
-  openconnectFound: boolean; appVersion: string; shouldUseDarkColors: boolean; }
+  openconnectFound: boolean; openconnectPath?: string; openconnectTrusted?: boolean;
+  appVersion: string; shouldUseDarkColors: boolean; }
 
 window.gp = {
   profiles: { list(): Promise<Profile[]>; save(p: Omit<Profile,'id'> & {id?: string}, password?: string): Promise<Profile>;
@@ -107,7 +133,7 @@ window.gp = {
   settings: { get(): Promise<Settings>; set(patch: Partial<Settings>): Promise<Settings>; },
   system: { info(): Promise<SystemInfo>; onThemeChange(cb: (dark: boolean) => void): () => void;
             openExternal(url: string): Promise<void>; },
-  window: { minimize(): void; close(): void; }   // for the custom title bar
+  window: { minimize(): void; close(): void; }   // close = hide to tray
 };
 ```
 `VpnState.error`:
@@ -119,11 +145,16 @@ window.gp = {
   suggest MacPorts), `stop_failed` (openconnect could not be stopped), `settings_not_confirmed`
   (the user declined the confirmation dialog for changed sensitive settings).
 
-IPC channels are named `gp:<area>:<action>` and listed as constants in `src/shared/ipc.ts`.
+IPC channels are named `gp:<area>:<action>` and listed as constants in `src/shared/ipc.ts`. In the
+Tauri app each method is a command named `<area>_<action>` in snake_case (e.g. `vpn_connect
+{profileId, opts?}`), events keep the `gp:<area>:<action>` names (`gp:vpn:state`, `gp:vpn:prompt`,
+`gp:logs:line`, `gp:system:themeChanged`); errors are strings in the
+`[field:<f>][code:<c>] <message>` format read by `parseIpcError` (`src/shared/validation.ts`).
 
 ## UI (renderer / "frontend")
-- Window 380×600 (min. 360×520), custom title bar: Windows — `titleBarOverlay` in theme colors,
-  macOS — `hiddenInset` with traffic lights, Linux — native frame.
+- Window 380×600 (min. 360×520): Windows — native title bar, macOS — overlay title bar
+  (`titleBarStyle: Overlay`, hidden title, traffic lights, draggable header drawn by the UI),
+  Linux — native frame.
 - **Main screen**: large Connect/Disconnect toggle with animated state, profile dropdown, gateway
   selection (auto/list), status card (IP, gateway, connection duration), clear errors with an
   action ("Set openconnect path", "Retry").
@@ -132,23 +163,26 @@ IPC channels are named `gp:<area>:<action>` and listed as constants in `src/shar
 - **Settings**: theme, launch at login, auto-reconnect, openconnect path, extra arguments, language.
 - **Log**: live log with auto-scroll, copy, "open log folder".
 - **Onboarding**: no profiles → "Add a portal" screen; openconnect not found → install
-  instructions for the current OS (Windows: OpenConnect-GUI installer, `winget search openconnect`
-  as an alternative; macOS: MacPorts; Ubuntu: apt).
+  instructions for the current OS (Windows: OpenConnect is bundled — reinstall/repair GP Connect or
+  set the path; macOS: MacPorts; Ubuntu: apt).
 - **Themes**: design tokens as CSS custom properties; light and dark themes in the Windows 11
   Fluent style (Segoe UI Variable on Windows, system-ui on macOS/Ubuntu), accent color, 8px radii,
-  `system` mode follows `nativeTheme`. Windows 11 — `backgroundMaterial: 'mica'` (with a
-  transparent body background), macOS — `vibrancy: 'under-window'`.
+  `system` mode follows the OS theme. Windows 11 — Mica (`window-vibrancy`, solid fallback) behind a
+  transparent webview, macOS — vibrancy, Linux — opaque window.
 - Accessibility: keyboard navigation, visible focus ring, aria attributes, WCAG AA contrast in
   both themes, `prefers-reduced-motion`.
 - Localization: ru (default), en, uk — a plain dictionary, no heavy libraries.
 
 ## Acceptance criteria
-1. `npm install && npm run typecheck && npm run lint && npm test && npm run build` pass.
+1. `npm install && npm run typecheck && npm run lint && npm test` and
+   `cargo fmt --all --check && cargo clippy --workspace --all-targets -- -D warnings &&
+   cargo test --workspace` pass; `npm run build` produces the bundles for the current OS.
 2. `npm run dev` starts the app; without openconnect it shows the install screen and does not crash.
 3. The prelogin parser, SAML cookie capture, openconnect output parser and the state machine are
-   covered by fixture-based unit tests (no real portal needed).
+   covered by fixture-based unit tests (no real portal needed), shared by cargo tests and Vitest.
 4. Passwords/cookies never reach the log, nor the renderer after submission.
 5. The theme switches system/light/dark instantly, without restart; both themes meet AA contrast.
-6. `npm run dist:win|dist:mac|dist:linux` are configured in electron-builder.
+6. `npm run dist:win|dist:mac|dist:linux` build the NSIS installer (with the helper and bundled
+   OpenConnect), the dmg and the deb + AppImage via the Tauri bundler.
 7. The README (English) covers installing openconnect on each OS, privileges, building, releasing
    and known limitations.

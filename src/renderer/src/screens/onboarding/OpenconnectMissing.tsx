@@ -21,13 +21,10 @@ interface InstallGuide {
   link?: { url: string; label: MessageKey };
 }
 
-/** Per-OS instructions, consistent with README "Установка OpenConnect". */
+/** Per-OS instructions (macOS: MacPorts, Linux: apt; Windows: OpenConnect ships with the installer). */
 export const INSTALL_GUIDES: Record<SystemInfo['platform'], InstallGuide> = {
-  win32: {
-    commands: ['winget search openconnect'],
-    commandsLabel: 'onboarding.missing.win32Alt',
-    link: { url: 'https://gitlab.com/openconnect/openconnect-gui/-/releases', label: 'onboarding.missing.win32Link' },
-  },
+  // The Windows installer bundles OpenConnect: reinstalling GP Connect is the fix (text only).
+  win32: { commands: [] },
   darwin: {
     commands: ['sudo port install openconnect'],
     link: { url: 'https://www.macports.org/install.php', label: 'onboarding.missing.darwinLink' },

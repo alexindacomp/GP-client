@@ -74,11 +74,9 @@ describe('connect toggle', () => {
     expect(await screen.findByText('10.1.1.1')).toBeInTheDocument();
   });
 
-  it('shows a connect rejection from main', async () => {
+  it('shows a connect rejection from the backend', async () => {
     await renderWith({ status: 'disconnected' });
-    mock.gp.vpn.connect.mockRejectedValueOnce(
-      new Error("Error invoking remote method 'gp:vpn:connect': Error: [code:busy] Cannot connect while connecting"),
-    );
+    mock.gp.vpn.connect.mockRejectedValueOnce(new Error('[code:busy] Cannot connect while connecting'));
     await userEvent.click(screen.getByRole('button', { name: 'Подключить к Работа' }));
     expect(await screen.findByText('Дождитесь завершения текущей операции.')).toBeInTheDocument();
   });

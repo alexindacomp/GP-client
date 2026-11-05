@@ -6,14 +6,10 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "types": ["node"],
-    "paths": { "@shared/*": ["./src/shared/*"] }
+    "paths": {
+      "@shared/*": ["./src/shared/*"]
+    }
   },
-  "include": [
-    "electron.vite.config.ts",
-    "vitest.config.mts",
-    "src/main/**/*",
-    "src/preload/**/*.ts",
-    "src/shared/**/*"
-  ],
-  "exclude": ["src/preload/gp-api.d.ts"]
+  "include": ["vite.renderer.config.mts", "vitest.config.mts", "src/shared/**/*"],
+  "exclude": ["src/shared/window-gp.d.ts"]
 }

@@ -1,0 +1,38 @@
+[package]
+name = "gp-core"
+description = "GP Connect core logic: prelogin, SAML, openconnect, VPN engine, stores, logging (no GUI deps)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish = false
+
+[features]
+default = ["http"]
+# reqwest/rustls implementation of `prelogin::HttpTransport`. Off for crates that only need the
+# pure logic (e.g. the Windows helper).
+http = ["dep:reqwest", "dep:rustls"]
+
+[dependencies]
+async-trait.workspace = true
+base64.workspace = true
+getrandom.workspace = true
+hmac.workspace = true
+regex.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+sha2.workspace = true
+thiserror.workspace = true
+tokio = { workspace = true, features = ["rt", "sync", "time", "macros", "process"] }
+tokio-util.workspace = true
+url.workspace = true
+uuid.workspace = true
+reqwest = { workspace = true, optional = true }
+rustls = { workspace = true, optional = true }
+
+[dev-dependencies]
+tempfile.workspace = true
+tokio = { workspace = true, features = ["rt", "sync", "time", "macros", "process", "test-util"] }
+
+[lints]
+workspace = true

@@ -17,7 +17,7 @@ export interface AuthPromptApi {
 }
 
 /**
- * Tracks the pending auth prompt. Main drops prompts silently when the attempt ends, so the
+ * Tracks the pending auth prompt. The backend drops prompts silently when the attempt ends, so the
  * dialog is closed when the state leaves the connecting phases.
  */
 export function useAuthPrompt(): AuthPromptApi {
@@ -28,7 +28,7 @@ export function useAuthPrompt(): AuthPromptApi {
   useEffect(() => {
     let live = true;
     let gotEvent = false;
-    // Main re-pushes pending prompts after a reload as well: show each prompt id once.
+    // The backend re-pushes pending prompts after a reload as well: show each prompt id once.
     const show = (prompt: AuthPrompt): void => {
       if (!live || shownId.current === prompt.id) return;
       shownId.current = prompt.id;

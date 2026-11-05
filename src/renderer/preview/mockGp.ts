@@ -1,8 +1,8 @@
 /**
  * DEV-ONLY in-browser mock of `window.gp` for design review (`npm run preview:web`).
- * Loaded only by preview/index.html, which is not an input of the Electron build
- * (electron.vite.config.ts builds src/renderer/index.html only), and it refuses to
- * install when the real preload API is present.
+ * Loaded only by preview/index.html, which is not an input of the app build
+ * (vite.renderer.config.mts builds src/renderer/index.html only), and it refuses to
+ * install when a real window.gp is already present.
  *
  * Query parameters:
  *   theme=system|light|dark   settings.theme            dark=1           OS dark mode for theme=system
@@ -50,22 +50,21 @@ function emitter<T>() {
   };
 }
 
-/** Rejection as Electron delivers main's marked errors: `…: Error: [field:f][code:c] message`. */
-const ipcError = (channel: string, info: IpcErrorInfo): Error =>
-  new Error(`Error invoking remote method '${channel}': Error: ${formatIpcError(info)}`);
+/** Rejection as the Tauri bridge delivers it: an Error with `[field:f][code:c] message` (channel unused). */
+const ipcError = (_channel: string, info: IpcErrorInfo): Error => new Error(formatIpcError(info));
 const delay = (ms: number): Promise<void> => new Promise((r) => setTimeout(r, ms));
 
 type Lang = Language;
 
 /** Where main would find openconnect (`trusted=0` pretends it's an unprotected location). */
 const DEFAULT_OC_PATH: Record<SystemInfo['platform'], string> = {
-  win32: 'C:\\Program Files\\OpenConnect-GUI\\openconnect.exe',
+  win32: 'C:\\Program Files\\GP Connect\\bin\\win32\\openconnect.exe',
   darwin: '/opt/homebrew/bin/openconnect',
   linux: '/usr/sbin/openconnect',
 };
 type Platform = SystemInfo['platform'];
 
-/** Same `message` texts as src/main/vpn/messages.ts. */
+/** Same `message` texts as crates/gp-core/src/vpn/messages.rs (verbatim). */
 const MESSAGES: Record<Lang, Record<VpnErrorCode, string>> = {
   ru: {
     OPENCONNECT_NOT_FOUND: 'Установите OpenConnect или укажите путь к нему в настройках.',
@@ -105,7 +104,7 @@ const MESSAGES: Record<Lang, Record<VpnErrorCode, string>> = {
 const UNTRUSTED_BINARY: Record<Lang, Record<Platform, string>> = {
   ru: {
     win32:
-      'Установите OpenConnect в «Program Files» (через установщик OpenConnect-GUI) — клиент запускает openconnect только из папок, которые может менять лишь администратор.',
+      'Переустановите GP Connect (установщик кладёт OpenConnect в Program Files) или укажите путь к openconnect.exe в папке, которую может менять только администратор.',
     darwin:
       'Установите OpenConnect через MacPorts: sudo port install openconnect — клиент запускает openconnect только из папок, которые может менять лишь администратор.',
     linux:
@@ -113,7 +112,7 @@ const UNTRUSTED_BINARY: Record<Lang, Record<Platform, string>> = {
   },
   en: {
     win32:
-      'Install OpenConnect into “Program Files” (with the OpenConnect-GUI installer) — the client only runs openconnect from folders that only an administrator can change.',
+      'Reinstall GP Connect (its installer puts OpenConnect into Program Files), or set the path to an openconnect.exe in a folder only an administrator can change.',
     darwin:
       'Install OpenConnect with MacPorts: sudo port install openconnect — the client only runs openconnect from folders that only an administrator can change.',
     linux:
@@ -121,7 +120,7 @@ const UNTRUSTED_BINARY: Record<Lang, Record<Platform, string>> = {
   },
   uk: {
     win32:
-      'Встановіть OpenConnect у «Program Files» (через інсталятор OpenConnect-GUI) — клієнт запускає openconnect лише з папок, які може змінювати тільки адміністратор.',
+      'Перевстановіть GP Connect (інсталятор розміщує OpenConnect у Program Files) або вкажіть шлях до openconnect.exe у папці, яку може змінювати тільки адміністратор.',
     darwin:
       'Встановіть OpenConnect через MacPorts: sudo port install openconnect — клієнт запускає openconnect лише з папок, які може змінювати тільки адміністратор.',
     linux:
@@ -155,7 +154,7 @@ const OTHER_HINTS: Record<Lang, Record<Exclude<VpnErrorHint, 'untrusted_binary'>
   },
 };
 
-/** Sample technical causes (untranslated, like main's `detail`). */
+/** Sample technical causes (untranslated, like the backend's `detail`). */
 const DETAILS: Partial<Record<VpnErrorCode | VpnErrorHint, string>> = {
   AUTH_FAILED: 'Login failed. (gateway auth: 512 Invalid username or password)',
   PORTAL_UNREACHABLE: 'getaddrinfo ENOTFOUND vpn.example.com',
@@ -182,9 +181,11 @@ function vpnError(
 }
 
 export function installMockGp(): void {
-  if ((window as Partial<Window>).gp) return; // real preload present: never mock
+  if ((window as Partial<Window>).gp) return; // a real bridge is present: never mock
   const q = new URLSearchParams(window.location.search);
   const platform = (q.get('platform') as SystemInfo['platform'] | null) ?? 'win32';
+  // Lets bridge/runtime.ts know the mock is the bridge.
+  document.documentElement.dataset.shell = 'preview';
   const scenario = q.get('state') ?? 'disconnected';
   const failHint = (q.get('hint') as VpnErrorHint | null) ?? undefined;
   const failCode =
@@ -421,7 +422,7 @@ export function installMockGp(): void {
           (k) => k in patch && JSON.stringify(patch[k] ?? '') !== JSON.stringify(settings[k] ?? ''),
         );
         if (sensitive.length > 0) {
-          // Simulates main's native confirmation dialog (the promise stays pending meanwhile).
+          // Simulates the backend's native confirmation dialog (the promise stays pending meanwhile).
           await delay(400);
           if (!window.confirm(`(mock native dialog) Apply change of ${sensitive.join(', ')}?`)) {
             throw ipcError('gp:settings:set', { code: 'not_confirmed', message: 'The change was not confirmed' });
@@ -459,10 +460,6 @@ export function installMockGp(): void {
         window.open(url, '_blank', 'noopener');
       },
     },
-    window: {
-      minimize: () => log('(mock) minimize'),
-      close: () => log('(mock) close'),
-    },
   };
 
   // Initial scenario.
@@ -488,7 +485,7 @@ export function installMockGp(): void {
       };
       break;
     case 'stop-failed':
-      // Main could not stop openconnect: still connected, Disconnect must stay available.
+      // The backend could not stop openconnect: still connected, Disconnect must stay available.
       state = { ...connected(pid), error: vpnError('PRIVILEGES_DENIED', settings.language, platform, 'stop_failed') };
       break;
     case 'error': {

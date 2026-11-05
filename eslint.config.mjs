@@ -5,7 +5,17 @@ import prettier from 'eslint-config-prettier';
 import globals from 'globals';
 
 export default tseslint.config(
-  { ignores: ['out/**', 'dist/**', 'node_modules/**', 'coverage/**', 'graphify-out/**'] },
+  {
+    ignores: [
+      'dist-renderer/**',
+      'node_modules/**',
+      'coverage/**',
+      'graphify-out/**',
+      'target/**',
+      'src-tauri/target/**',
+      'src-tauri/gen/**',
+    ],
+  },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {
@@ -17,7 +27,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['src/main/**/*.ts', 'src/preload/**/*.ts', 'src/shared/**/*.ts', '*.config.{ts,mjs}', 'scripts/**/*.mjs'],
+    files: ['src/shared/**/*.ts', '*.config.{ts,mts,mjs}', 'scripts/**/*.mjs'],
     languageOptions: { globals: { ...globals.node } },
   },
   {
